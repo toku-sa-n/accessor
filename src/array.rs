@@ -1,7 +1,7 @@
 //! Accessor for an array
 
 use crate::{error::Error, mapper::Mapper};
-use core::{convert::TryInto, fmt, marker::PhantomData, mem, ptr};
+use core::{fmt, marker::PhantomData, mem, ptr};
 
 /// An accessor to read, modify, and write an array of some type on memory.
 ///
@@ -78,8 +78,8 @@ where
             Ok(Self::new_array_aligned(phys_base, len, mapper))
         } else {
             Err(Error::NotAligned {
-                alignment: (mem::align_of::<T>()).try_into().unwrap(),
-                address: phys_base.try_into().unwrap(),
+                alignment: mem::align_of::<T>(),
+                address: phys_base,
             })
         }
     }
