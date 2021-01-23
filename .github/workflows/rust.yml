@@ -1,0 +1,34 @@
+name: Rust
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions-rs/toolchain@v1.0.6
+      with:
+        toolchain: nightly
+        components: clippy, rustfmt
+        override: true
+
+    - name: Run rustfmt with check mode
+      run: |
+        shopt -s globstar
+        rustfmt **/*.rs --check
+
+    - uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: -- -D clippy::pedantic -D clippy::all
+
+    - name: Build
+      run: cargo build
