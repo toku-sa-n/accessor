@@ -61,6 +61,11 @@ where
     ///
     /// Caller must ensure that only one accessor to the same region is created, otherwise
     /// it may cause undefined behaviors such as data race.
+    ///
+    /// # Errors
+    ///
+    /// This method may return a [`Error::NotAligned`] error if `phys_base` is not aligned as the
+    /// type `T` requires.
     pub unsafe fn new(phys_base: usize, mapper: M) -> Result<Self, Error> {
         if super::is_aligned::<T>(phys_base) {
             Ok(Self::new_aligned(phys_base, mapper))
