@@ -1,7 +1,7 @@
 //! An accessor to a single element
 
 use crate::{error::Error, mapper::Mapper};
-use core::{fmt, marker::PhantomData, mem, ptr};
+use core::{fmt, hash::Hash, marker::PhantomData, mem, ptr};
 
 /// An accessor to read, modify, and write a single value of memory.
 ///
@@ -39,7 +39,6 @@ use core::{fmt, marker::PhantomData, mem, ptr};
 ///     *v *= 2;
 /// });
 /// ```
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Single<T, M>
 where
     T: Copy,
@@ -128,6 +127,48 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{:?}", self.read())
+    }
+}
+impl<T, M> PartialEq for Single<T, M>
+where
+    T: Copy + PartialEq,
+    M: Mapper,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.read().eq(&other.read())
+    }
+}
+impl<T, M> Eq for Single<T, M>
+where
+    T: Copy + Eq,
+    M: Mapper,
+{
+}
+impl<T, M> PartialOrd for Single<T, M>
+where
+    T: Copy + PartialOrd,
+    M: Mapper,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        self.read().partial_cmp(&other.read())
+    }
+}
+impl<T, M> Ord for Single<T, M>
+where
+    T: Copy + Ord,
+    M: Mapper,
+{
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        self.read().cmp(&other.read())
+    }
+}
+impl<T, M> Hash for Single<T, M>
+where
+    T: Copy + Hash,
+    M: Mapper,
+{
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
+        self.read().hash(state)
     }
 }
 impl<T, M> Drop for Single<T, M>

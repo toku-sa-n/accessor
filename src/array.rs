@@ -1,7 +1,7 @@
 //! Accessor for an array
 
 use crate::{error::Error, mapper::Mapper};
-use core::{fmt, marker::PhantomData, mem, ptr};
+use core::{fmt, hash::Hash, marker::PhantomData, mem, ptr};
 
 /// An accessor to read, modify, and write an array of some type on memory.
 ///
@@ -42,7 +42,6 @@ use core::{fmt, marker::PhantomData, mem, ptr};
 ///     *v *= 2;
 /// });
 /// ```
-#[derive(PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Array<T, M>
 where
     T: Copy,
@@ -160,6 +159,35 @@ where
         f.debug_list().entries(self).finish()
     }
 }
+impl<T, M> PartialEq for Array<T, M>
+where
+    T: Copy + PartialEq,
+    M: Mapper,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.into_iter()
+            .zip(other.into_iter())
+            .map(|(a, b)| a.eq(&b))
+            .all(|x| x)
+    }
+}
+impl<T, M> Eq for Array<T, M>
+where
+    T: Copy + Eq,
+    M: Mapper,
+{
+}
+impl<T, M> Hash for Array<T, M>
+where
+    T: Copy + Hash,
+    M: Mapper,
+{
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
+        for e in self {
+            e.hash(state);
+        }
+    }
+}
 impl<'a, T, M> IntoIterator for &'a Array<T, M>
 where
     T: Copy,
@@ -183,7 +211,7 @@ where
 }
 
 /// An iterator over a value of `T`.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Iter<'a, T, M>
 where
     T: Copy,
