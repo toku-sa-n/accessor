@@ -41,6 +41,8 @@
 //! arr.write_at(0, 42);
 //! ```
 
+#![no_std]
+
 pub mod array;
 pub mod error;
 pub mod mapper;
