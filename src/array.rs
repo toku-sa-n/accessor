@@ -53,6 +53,7 @@ where
     _marker: PhantomData<T>,
     mapper: M,
 }
+#[allow(clippy::len_without_is_empty)] // Array is never empty.
 impl<T, M> Array<T, M>
 where
     T: Copy,
