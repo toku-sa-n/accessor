@@ -1,7 +1,7 @@
 //! An accessor to a single element
 
 use crate::{error::Error, mapper::Mapper};
-use core::{convert::TryInto, fmt, marker::PhantomData, mem, ptr};
+use core::{fmt, marker::PhantomData, mem, ptr};
 
 /// An accessor to read, modify, and write a single value of memory.
 ///
@@ -66,8 +66,8 @@ where
             Ok(Self::new_aligned(phys_base, mapper))
         } else {
             Err(Error::NotAligned {
-                alignment: mem::align_of::<T>().try_into().unwrap(),
-                address: (phys_base).try_into().unwrap(),
+                alignment: mem::align_of::<T>(),
+                address: phys_base,
             })
         }
     }
