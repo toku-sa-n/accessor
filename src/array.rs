@@ -74,13 +74,13 @@ where
     pub unsafe fn new(phys_base: usize, len: usize, mapper: M) -> Result<Self, Error> {
         if len == 0 {
             Err(Error::EmptyArray)
-        } else if !super::is_aligned::<T>(phys_base) {
+        } else if super::is_aligned::<T>(phys_base) {
+            Ok(Self::new_array_aligned(phys_base, len, mapper))
+        } else {
             Err(Error::NotAligned {
                 alignment: (mem::align_of::<T>()).try_into().unwrap(),
                 address: phys_base.try_into().unwrap(),
             })
-        } else {
-            Ok(Self::new_array_aligned(phys_base, len, mapper))
         }
     }
 
