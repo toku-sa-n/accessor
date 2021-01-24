@@ -58,7 +58,7 @@ where
     T: Copy,
     M: Mapper,
 {
-    /// Creates an accessor to the array `[T; len]`. The array starts at the
+    /// Creates an accessor to `[T; len]`. The array starts at the
     /// physical address `phys_base`.
     ///
     /// # Safety
