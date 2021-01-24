@@ -58,8 +58,7 @@ where
     T: Copy,
     M: Mapper,
 {
-    /// Creates an accessor to `[T; len]`. The array starts at the
-    /// physical address `phys_base`.
+    /// Creates an accessor to `[T; len]` at the physical address `phys_base`.
     ///
     /// # Safety
     ///
@@ -118,7 +117,7 @@ where
         self.write_at(i, v);
     }
 
-    /// Returns the length of the element which this accessor points.
+    /// Returns the length of the array.
     pub fn len(&self) -> usize {
         self.len
     }

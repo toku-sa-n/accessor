@@ -23,7 +23,7 @@ use core::{fmt, hash::Hash, marker::PhantomData, mem, ptr};
 ///
 /// let mapper = M;
 ///
-/// // Creates an accessor to the i32 value at the physical address 0x1000.
+/// // Create an accessor to the i32 value at the physical address 0x1000.
 /// let mut a = unsafe {
 ///     accessor::Single::<i32, M>::new(0x1000, mapper).expect("Failed to create an accessor.")
 /// };
@@ -54,7 +54,7 @@ where
     T: Copy,
     M: Mapper,
 {
-    /// Creates a new accessor. The element is at the physical address `phys_base`.
+    /// Creates a new accessor to an element of type `T` at the physical address `phys_base`.
     ///
     /// # Safety
     ///
@@ -76,21 +76,21 @@ where
         }
     }
 
-    /// Reads a value from where the accessor points.
+    /// Reads a value from the address that the accessor points to.
     pub fn read(&self) -> T {
         // SAFETY: `Accessor::new` ensures that `self.virt` is aligned properly.
         unsafe { ptr::read_volatile(self.virt as *const _) }
     }
 
-    /// Writes a value to where the accessor points.
+    /// Writes a value to the address that the accessor points to.
     pub fn write(&mut self, v: T) {
         // SAFETY: `Accessor::new` ensures that `self.virt` is aligned properly.
         unsafe { ptr::write_volatile(self.virt as *mut _, v) }
     }
 
-    /// Updates a value which the accessor points by reading it, modifying it, and writing it.
+    /// Updates a value that the accessor points by reading it, modifying it, and writing it.
     ///
-    /// Note that some MMIO region (e.g. the Command Ring Pointer field of the Command
+    /// Note that some MMIO regions (e.g. the Command Ring Pointer field of the Command
     /// Ring Control Register of the xHCI) may return 0 regardless of the actual values of the
     /// fields. For these regions, this operation should be called only once.
     pub fn update<U>(&mut self, f: U)
