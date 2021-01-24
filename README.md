@@ -1,5 +1,10 @@
 # accessor
 
+[![GitHub Actions](https://github.com/toku-sa-n/accessor/workflows/Rust/badge.svg)](https://github.com/toku-sa-n/accessor/actions)
+[![Crates.io](https://img.shields.io/crates/v/accessor)](https://crates.io/crates/accessor)
+![Crates.io](https://img.shields.io/crates/l/accessor)
+[![docs.rs](https://docs.rs/accessor/badge.svg)](https://docs.rs/accessor)
+
 Accessors to access physical memory.
 
 This crate is intended to access memory-mapped I/O. Reading and writing are done volatilely.
