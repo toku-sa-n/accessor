@@ -25,7 +25,7 @@ use core::{fmt, hash::Hash, marker::PhantomData, mem, ptr};
 ///
 /// let mapper = M;
 ///
-/// // Creates an accessor to the array that starts at the physical address 0x1000, has 10 elements
+/// // Create an accessor to the array at the physical address 0x1000 that has 10 elements
 /// // of i32 type.
 /// let mut a = unsafe {
 ///     accessor::Array::<u32, M>::new(0x1000, 10, mapper).expect("Failed to create an accessor.")
@@ -58,8 +58,7 @@ where
     T: Copy,
     M: Mapper,
 {
-    /// Creates an accessor to the array `[T; len]`. The array starts at the
-    /// physical address `phys_base`.
+    /// Creates an accessor to `[T; len]` at the physical address `phys_base`.
     ///
     /// # Safety
     ///
@@ -118,7 +117,7 @@ where
         self.write_at(i, v);
     }
 
-    /// Returns the length of the element which this accessor points.
+    /// Returns the length of the array.
     pub fn len(&self) -> usize {
         self.len
     }

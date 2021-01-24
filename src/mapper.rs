@@ -1,6 +1,6 @@
 //! Memory mapper module.
 
-/// A mapper trait to access physical memory.
+/// A mapper trait for accessing physical memory.
 pub trait Mapper {
     /// Maps `bytes` bytes of physical memory region starting from `phys_start` and returns the
     /// first virtual address.
@@ -24,7 +24,7 @@ pub trait Mapper {
     /// }
     unsafe fn map(&mut self, phys_start: usize, bytes: usize) -> usize;
 
-    /// Unmaps `bytes` bytes of virtual memory region starting from `virt_start`.
+    /// Unmaps `bytes` bytes of the virtual memory region starting from `virt_start`.
     ///
     /// # Examples
     ///
