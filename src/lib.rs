@@ -2,6 +2,8 @@
 //!
 //! This crate is intended to access memory-mapped I/O. Reading and writing are done volatilely.
 //!
+//! The accessed type must implement [`Copy`] because reading and writing values need to copy it.
+//!
 //! This crate is `#[no_std]` compatible.
 //!
 //! ```no_run
