@@ -49,6 +49,8 @@ pub mod mapper;
 pub mod single;
 
 pub use array::Array;
+pub use error::Error;
+pub use mapper::Mapper;
 pub use single::Single;
 
 fn is_aligned<T>(phys_base: usize) -> bool {
