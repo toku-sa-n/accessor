@@ -9,10 +9,11 @@ use core::{fmt, hash::Hash, marker::PhantomData, mem, ptr};
 ///
 /// ```no_run
 /// use accessor::mapper::Mapper;
+/// use core::num::NonZeroUsize;
 ///
 /// struct M;
 /// impl Mapper for M {
-///     unsafe fn map(&mut self, phys_start: usize, bytes: usize) -> usize {
+///     unsafe fn map(&mut self, phys_start: usize, bytes: usize) -> NonZeroUsize {
 ///         unimplemented!()
 ///     }
 ///
@@ -114,7 +115,7 @@ where
         assert!(super::is_aligned::<T>(phys_base));
 
         let bytes = mem::size_of::<T>();
-        let virt = mapper.map(phys_base, bytes);
+        let virt = mapper.map(phys_base, bytes).get();
 
         Self {
             virt,

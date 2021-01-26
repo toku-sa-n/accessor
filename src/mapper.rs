@@ -1,5 +1,7 @@
 //! Memory mapper module.
 
+use core::num::NonZeroUsize;
+
 /// A mapper trait for accessing physical memory.
 pub trait Mapper {
     /// Maps `bytes` bytes of physical memory region starting from `phys_start` and returns the
@@ -27,7 +29,7 @@ pub trait Mapper {
     ///     println!("Physical address 0x{:X} is mapped to the virtual address 0x{:X}.",
     ///     phys_start, virt_start);
     /// }
-    unsafe fn map(&mut self, phys_start: usize, bytes: usize) -> usize;
+    unsafe fn map(&mut self, phys_start: usize, bytes: usize) -> NonZeroUsize;
 
     /// Unmaps `bytes` bytes of the virtual memory region starting from `virt_start`.
     ///
