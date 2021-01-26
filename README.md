@@ -15,10 +15,11 @@ This crate is `#[no_std]` compatible.
 
 ```rust
 use accessor::mapper::Mapper;
+use core::num::NonZeroUsize;
 
 struct M;
 impl Mapper for M {
-    unsafe fn map(&mut self, phys_start: usize, bytes: usize) -> usize {
+    unsafe fn map(&mut self, phys_start: usize, bytes: usize) -> NonZeroUsize {
         unimplemented!()
     }
 
