@@ -11,8 +11,8 @@ pub trait Mapper {
     /// - no [`&mut`] references are aliased.
     /// - no values have invalid or uninitialized values.
     ///
-    /// The caller must be careful, especially if it tries to remap by calling [`unmap_pages`], then
-    /// [`map_pages`] to the same memory region.
+    /// The caller must be careful, especially if it tries to remap by calling [`Mapper::unmap`], then
+    /// [`Mapper::map`] to the same memory region.
     ///
     /// # Examples
     ///

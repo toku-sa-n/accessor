@@ -62,8 +62,10 @@ where
     ///
     /// # Safety
     ///
-    /// Caller must ensure that only one accessor to the same region is created, otherwise
-    /// undefined behaviors such as data race may occur.
+    /// The caller must ensure the following conditions:
+    /// - The array at the physical address `phys_base` is valid.
+    /// - Any other accessors except the one returned by this method must not access the array
+    /// while the returned one lives.
     ///
     /// # Errors
     ///
@@ -124,8 +126,10 @@ where
 
     /// # Safety
     ///
-    /// Caller must ensure that only one accessor to the same region is created, otherwise
-    /// undefined behaviors such as data race may occur.
+    /// The caller must ensure the following conditions:
+    /// - The array at the physical address `phys_base` is valid.
+    /// - Any other accessors except the one returned by this method must not access the array
+    /// while the returned one lives.
     unsafe fn new_array_aligned(phys_base: usize, len: usize, mut mapper: M) -> Self {
         assert!(super::is_aligned::<T>(phys_base));
         assert_ne!(len, 0);
