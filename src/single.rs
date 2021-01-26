@@ -58,8 +58,10 @@ where
     ///
     /// # Safety
     ///
-    /// Caller must ensure that only one accessor to the same region is created, otherwise
-    /// it may cause undefined behaviors such as data race.
+    /// The caller must ensure the following conditions:
+    /// - The value at the physical address `phys_base` is valid.
+    /// - Any other accessors except the one returned by this method must not access the value
+    /// while the returned one lives.
     ///
     /// # Errors
     ///
@@ -104,8 +106,10 @@ where
 
     /// # Safety
     ///
-    /// Caller must ensure that only one accessor to the same region is created, otherwise
-    /// it may cause undefined behaviors such as data race.
+    /// The caller must ensure the following conditions:
+    /// - The value at the physical address `phys_base` is valid.
+    /// - Any other accessors except the one returned by this method must not access the value
+    /// while the returned one lives.
     unsafe fn new_aligned(phys_base: usize, mut mapper: M) -> Self {
         assert!(super::is_aligned::<T>(phys_base));
 

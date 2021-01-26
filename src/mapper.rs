@@ -7,7 +7,12 @@ pub trait Mapper {
     ///
     /// # Safety
     ///
-    /// Caller must ensure that multiple [`&mut`] references to the same object are *not* created.
+    /// The caller must ensure that
+    /// - no [`&mut`] references are aliased.
+    /// - no values have invalid or uninitialized values.
+    ///
+    /// The caller must be careful, especially if it tries to remap by calling [`Mapper::unmap`], then
+    /// [`Mapper::map`] to the same memory region.
     ///
     /// # Examples
     ///
