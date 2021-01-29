@@ -1,5 +1,9 @@
 //! Accessors to access physical memory.
 //!
+//! This crate provides accessors to values at a specific memory address. When an accessor is
+//! created, physical memory is mapped to virtual memory. The methods of the accessors can access
+//! a value at the specified physical address.  Once an accessor is dropped, the mapped memory is unmapped.
+//!
 //! This crate is intended to access memory-mapped I/O. Reading and writing are done volatilely.
 //!
 //! The accessed type must implement [`Copy`] because reading and writing values need to copy it.
