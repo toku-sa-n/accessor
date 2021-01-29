@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased - ReleaseDate
+### Changed
+- `Array::new` and `Single::new` now panic when the requirements are not fulfilled.
+- Previous `Array::new` and `Single::new` are renamed to `Array::try_new` and `Single::try_new` respectively.
 
 ## 0.2.0 - 2021-01-26
 ### Changed
