@@ -73,7 +73,7 @@ where
     /// This method may return an error.
     /// - [`Error::NotAligned`] - `phys_base` is not aligned as the type `T` requires.
     /// - [`Error::EmptyArray`] - `len == 0`
-    pub unsafe fn new(phys_base: usize, len: usize, mapper: M) -> Result<Self, Error> {
+    pub unsafe fn try_new(phys_base: usize, len: usize, mapper: M) -> Result<Self, Error> {
         if len == 0 {
             Err(Error::EmptyArray)
         } else if super::is_aligned::<T>(phys_base) {
