@@ -25,9 +25,7 @@ use core::{fmt, hash::Hash, marker::PhantomData, mem, ptr};
 /// let mapper = M;
 ///
 /// // Create an accessor to the i32 value at the physical address 0x1000.
-/// let mut a = unsafe {
-///     accessor::Single::<i32, M>::new(0x1000, mapper).expect("Failed to create an accessor.")
-/// };
+/// let mut a = unsafe { accessor::Single::<i32, M>::new(0x1000, mapper) };
 ///
 /// // Read a value.
 /// a.read();

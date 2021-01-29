@@ -28,9 +28,7 @@ use core::{fmt, hash::Hash, marker::PhantomData, mem, ptr};
 ///
 /// // Create an accessor to the array at the physical address 0x1000 that has 10 elements
 /// // of i32 type.
-/// let mut a = unsafe {
-///     accessor::Array::<u32, M>::new(0x1000, 10, mapper).expect("Failed to create an accessor.")
-/// };
+/// let mut a = unsafe { accessor::Array::<u32, M>::new(0x1000, 10, mapper) };
 ///
 /// // Read the 3rd element of the array.
 /// a.read_at(3);
