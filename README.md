@@ -7,9 +7,13 @@
 
 Accessors to access physical memory.
 
+This crate provides accessors to values at a specific memory address. When an accessor is
+created, physical memory is mapped to virtual memory. The methods of the accessors can access
+a value at the specified physical address.  Once an accessor is dropped, the mapped memory is unmapped.
+
 This crate is intended to access memory-mapped I/O. Reading and writing are done volatilely.
 
-The accessed type must implement `Copy` because reading and writing values need to copy it.
+The accessed type must implement [`Copy`] because reading and writing values need to copy it.
 
 This crate is `#[no_std]` compatible.
 
@@ -29,9 +33,7 @@ impl Mapper for M {
 }
 
 // Create an accessor to an i32 value at the physical address 0x1000.
-let mut a = unsafe {
-    accessor::Single::<i32, M>::new(0x1000, M).expect("Failed to create an accessor.")
-};
+let mut a = unsafe { accessor::Single::<i32, M>::new(0x1000, M) };
 
 // Read a value.
 a.read();
@@ -40,9 +42,7 @@ a.read();
 a.write(3);
 
 // Create an accessor to an array at the physical address 0x2000 of the type i32 that has 5 elements.
-let mut arr = unsafe {
-    accessor::Array::<i32, M>::new(0x2000, 5, M).expect("Failed to create an accessor.")
-};
+let mut arr = unsafe { accessor::Array::<i32, M>::new(0x2000, 5, M) };
 
 // Read the 2nd element.
 arr.read_at(2);
