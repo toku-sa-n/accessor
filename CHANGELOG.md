@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased - ReleaseDate
+### Added
+- Additional crate level documentation is added.
+
 ### Changed
 - `Array::new` and `Single::new` now panic when the requirements are not fulfilled.
 - Previous `Array::new` and `Single::new` are renamed to `Array::try_new` and `Single::try_new` respectively.
