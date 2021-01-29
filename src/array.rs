@@ -68,6 +68,35 @@ where
     /// - Any other accessors except the one returned by this method must not access the array
     /// while the returned one lives.
     ///
+    /// # Panics
+    ///
+    /// This method panics if
+    /// - `phys_base` is not aligned as the type `T` requires.
+    /// - `len == 0`.
+    pub unsafe fn new(phys_base: usize, len: usize, mut mapper: M) -> Self {
+        assert!(super::is_aligned::<T>(phys_base));
+        assert_ne!(len, 0);
+
+        let bytes = mem::size_of::<T>() * len;
+        let virt = mapper.map(phys_base, bytes).get();
+
+        Self {
+            virt,
+            len,
+            _marker: PhantomData,
+            mapper,
+        }
+    }
+
+    /// Creates an accessor to `[T; len]` at the physical address `phys_base`.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure the following conditions:
+    /// - The array at the physical address `phys_base` is valid.
+    /// - Any other accessors except the one returned by this method must not access the array
+    /// while the returned one lives.
+    ///
     /// # Errors
     ///
     /// This method may return an error.
@@ -77,7 +106,7 @@ where
         if len == 0 {
             Err(Error::EmptyArray)
         } else if super::is_aligned::<T>(phys_base) {
-            Ok(Self::new_array_aligned(phys_base, len, mapper))
+            Ok(Self::new(phys_base, len, mapper))
         } else {
             Err(Error::NotAligned {
                 alignment: mem::align_of::<T>(),
@@ -123,27 +152,6 @@ where
     /// Returns the length of the array.
     pub fn len(&self) -> usize {
         self.len
-    }
-
-    /// # Safety
-    ///
-    /// The caller must ensure the following conditions:
-    /// - The array at the physical address `phys_base` is valid.
-    /// - Any other accessors except the one returned by this method must not access the array
-    /// while the returned one lives.
-    unsafe fn new_array_aligned(phys_base: usize, len: usize, mut mapper: M) -> Self {
-        assert!(super::is_aligned::<T>(phys_base));
-        assert_ne!(len, 0);
-
-        let bytes = mem::size_of::<T>() * len;
-        let virt = mapper.map(phys_base, bytes).get();
-
-        Self {
-            virt,
-            len,
-            _marker: PhantomData,
-            mapper,
-        }
     }
 
     fn addr(&self, i: usize) -> usize {

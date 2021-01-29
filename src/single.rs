@@ -64,13 +64,39 @@ where
     /// - Any other accessors except the one returned by this method must not access the value
     /// while the returned one lives.
     ///
+    /// # Panics
+    ///
+    /// This method panics if `phys_base` is not aligned as the type `T` requires.
+    pub unsafe fn new(phys_base: usize, mut mapper: M) -> Self {
+        assert!(super::is_aligned::<T>(phys_base));
+
+        let bytes = mem::size_of::<T>();
+        let virt = mapper.map(phys_base, bytes).get();
+
+        Self {
+            virt,
+            bytes,
+            _marker: PhantomData,
+            mapper,
+        }
+    }
+
+    /// Creates a new accessor to an element of type `T` at the physical address `phys_base`.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure the following conditions:
+    /// - The value at the physical address `phys_base` is valid.
+    /// - Any other accessors except the one returned by this method must not access the value
+    /// while the returned one lives.
+    ///
     /// # Errors
     ///
     /// This method may return a [`Error::NotAligned`] error if `phys_base` is not aligned as the
     /// type `T` requires.
     pub unsafe fn try_new(phys_base: usize, mapper: M) -> Result<Self, Error> {
         if super::is_aligned::<T>(phys_base) {
-            Ok(Self::new_aligned(phys_base, mapper))
+            Ok(Self::new(phys_base, mapper))
         } else {
             Err(Error::NotAligned {
                 alignment: mem::align_of::<T>(),
@@ -103,26 +129,6 @@ where
         let mut v = self.read();
         f(&mut v);
         self.write(v);
-    }
-
-    /// # Safety
-    ///
-    /// The caller must ensure the following conditions:
-    /// - The value at the physical address `phys_base` is valid.
-    /// - Any other accessors except the one returned by this method must not access the value
-    /// while the returned one lives.
-    unsafe fn new_aligned(phys_base: usize, mut mapper: M) -> Self {
-        assert!(super::is_aligned::<T>(phys_base));
-
-        let bytes = mem::size_of::<T>();
-        let virt = mapper.map(phys_base, bytes).get();
-
-        Self {
-            virt,
-            bytes,
-            _marker: PhantomData,
-            mapper,
-        }
     }
 }
 impl<T, M> fmt::Debug for Single<T, M>
