@@ -31,13 +31,13 @@ use core::{fmt, hash::Hash, marker::PhantomData, mem, ptr};
 /// let mut a = unsafe { accessor::Array::<u32, M>::new(0x1000, 10, mapper) };
 ///
 /// // Read the 3rd element of the array.
-/// a.read_at(3);
+/// a.read_volatile_at(3);
 ///
 /// // Write 42 as the 5th element of the array.
-/// a.write_at(5, 42);
+/// a.write_volatile_at(5, 42);
 ///
 /// // Update the 0th element.
-/// a.update_at(0, |v| {
+/// a.update_volatile_at(0, |v| {
 ///     *v *= 2;
 /// });
 /// ```
@@ -118,11 +118,17 @@ where
     /// # Panics
     ///
     /// This method will panic if `i >= self.len()`
-    pub fn read_at(&self, i: usize) -> T {
+    pub fn read_volatile_at(&self, i: usize) -> T {
         assert!(i < self.len());
 
         // SAFETY: `Accessor::new_array` ensures that `self.addr(i)` is aligned properly.
         unsafe { ptr::read_volatile(self.addr(i) as *const _) }
+    }
+
+    /// Alias of [`Array::read_volatile_at`].
+    #[deprecated(since = "0.3.1", note = "use `read_volatile_at`")]
+    pub fn read_at(&self, i: usize) -> T {
+        self.read_volatile_at(i)
     }
 
     /// Writes `v` as the `i`th element to the address that the accessor points to.
@@ -130,7 +136,7 @@ where
     /// # Panics
     ///
     /// This method will panic if `i >= self.len()`
-    pub fn write_at(&mut self, i: usize, v: T) {
+    pub fn write_volatile_at(&mut self, i: usize, v: T) {
         assert!(i < self.len());
 
         // SAFETY: `Accessor::new_array` ensures that `self.addr(i)` is aligned properly.
@@ -139,14 +145,29 @@ where
         }
     }
 
+    /// Alias of [`Array::write_volatile_at`].
+    #[deprecated(since = "0.3.1", note = "use `write_volatile_at`")]
+    pub fn write_at(&mut self, i: usize, v: T) {
+        self.write_volatile_at(i, v)
+    }
+
     /// Updates the `i`th element that the accessor points by reading it, modifying it, and writing it.
+    pub fn update_volatile_at<U>(&mut self, i: usize, f: U)
+    where
+        U: FnOnce(&mut T),
+    {
+        let mut v = self.read_volatile_at(i);
+        f(&mut v);
+        self.write_volatile_at(i, v);
+    }
+
+    /// Alias of [`Array::update_volatile_at`].
+    #[deprecated(since = "0.3.1", note = "use `update_volatile_at`")]
     pub fn update_at<U>(&mut self, i: usize, f: U)
     where
         U: FnOnce(&mut T),
     {
-        let mut v = self.read_at(i);
-        f(&mut v);
-        self.write_at(i, v);
+        self.update_volatile_at(i, f)
     }
 
     /// Returns the length of the array.
@@ -250,7 +271,7 @@ where
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.i < self.a.len() {
-            let t = self.a.read_at(self.i);
+            let t = self.a.read_volatile_at(self.i);
             self.i += 1;
             Some(t)
         } else {

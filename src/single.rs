@@ -28,13 +28,13 @@ use core::{fmt, hash::Hash, marker::PhantomData, mem, ptr};
 /// let mut a = unsafe { accessor::Single::<i32, M>::new(0x1000, mapper) };
 ///
 /// // Read a value.
-/// a.read();
+/// a.read_volatile();
 ///
 /// // Write 42.
-/// a.write(42);
+/// a.write_volatile(42);
 ///
 /// // Update the value.
-/// a.update(|v| {
+/// a.update_volatile(|v| {
 ///     *v *= 2;
 /// });
 /// ```
@@ -104,17 +104,29 @@ where
     }
 
     /// Reads a value from the address that the accessor points to.
-    pub fn read(&self) -> T {
+    pub fn read_volatile(&self) -> T {
         // SAFETY: `Accessor::new` ensures that `self.virt` is aligned properly.
         unsafe { ptr::read_volatile(self.virt as *const _) }
     }
 
+    /// Alias of [`Single::read_volatile`].
+    #[deprecated(since = "0.3.1", note = "use `read_volatile`")]
+    pub fn read(&self) -> T {
+        self.read_volatile()
+    }
+
     /// Writes a value to the address that the accessor points to.
-    pub fn write(&mut self, v: T) {
+    pub fn write_volatile(&mut self, v: T) {
         // SAFETY: `Accessor::new` ensures that `self.virt` is aligned properly.
         unsafe {
             ptr::write_volatile(self.virt as *mut _, v);
         }
+    }
+
+    /// Alias of [`Single::write_volatile`].
+    #[deprecated(since = "0.3.1", note = "use `write_volatile`")]
+    pub fn write(&mut self, v: T) {
+        self.write_volatile(v);
     }
 
     /// Updates a value that the accessor points by reading it, modifying it, and writing it.
@@ -122,13 +134,22 @@ where
     /// Note that some MMIO regions (e.g. the Command Ring Pointer field of the Command
     /// Ring Control Register of the xHCI) may return 0 regardless of the actual values of the
     /// fields. For these regions, this operation should be called only once.
+    pub fn update_volatile<U>(&mut self, f: U)
+    where
+        U: FnOnce(&mut T),
+    {
+        let mut v = self.read_volatile();
+        f(&mut v);
+        self.write_volatile(v);
+    }
+
+    /// Alias of [`Single::update_volatile`].
+    #[deprecated(since = "0.3.1", note = "use `update_volatile`")]
     pub fn update<U>(&mut self, f: U)
     where
         U: FnOnce(&mut T),
     {
-        let mut v = self.read();
-        f(&mut v);
-        self.write(v);
+        self.update_volatile(f);
     }
 }
 impl<T, M> fmt::Debug for Single<T, M>
@@ -137,7 +158,7 @@ where
     M: Mapper,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:?}", self.read())
+        write!(f, "{:?}", self.read_volatile())
     }
 }
 impl<T, M> PartialEq for Single<T, M>
@@ -146,7 +167,7 @@ where
     M: Mapper,
 {
     fn eq(&self, other: &Self) -> bool {
-        self.read().eq(&other.read())
+        self.read_volatile().eq(&other.read_volatile())
     }
 }
 impl<T, M> Eq for Single<T, M>
@@ -161,7 +182,7 @@ where
     M: Mapper,
 {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-        self.read().partial_cmp(&other.read())
+        self.read_volatile().partial_cmp(&other.read_volatile())
     }
 }
 impl<T, M> Ord for Single<T, M>
@@ -170,7 +191,7 @@ where
     M: Mapper,
 {
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
-        self.read().cmp(&other.read())
+        self.read_volatile().cmp(&other.read_volatile())
     }
 }
 impl<T, M> Hash for Single<T, M>
@@ -179,7 +200,7 @@ where
     M: Mapper,
 {
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
-        self.read().hash(state);
+        self.read_volatile().hash(state);
     }
 }
 impl<T, M> Drop for Single<T, M>
