@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased - ReleaseDate
+### Fixed
+- Clippy warnings are fixed ([https://github.com/toku-sa-n/accessor/pull/19](#19)).
 
 ## 0.3.0 - 2021-01-29
 ### Added
