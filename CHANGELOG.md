@@ -4,6 +4,7 @@
 ### Changed
 - Bors is no longer used for merging PRs ([#20](https://github.com/toku-sa-n/accessor/pull/20)).
 - Tests on CI are executed on stable Rust, not the nightly one ([#21](https://github.com/toku-sa-n/accessor/pull/21)).
+- `rustfmt.toml` is deleted so that `cargo fmt` works on stable Rust ([#23](https://github.com/toku-sa-n/accessor/pull/23)).
 
 ### Fixed
 - Clippy warnings are fixed ([#19](https://github.com/toku-sa-n/accessor/pull/19)).
