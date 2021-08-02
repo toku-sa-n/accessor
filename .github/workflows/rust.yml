@@ -14,16 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - uses: actions-rs/toolchain@v1.0.6
-      with:
-        toolchain: nightly
-        components: clippy, rustfmt
-        override: true
-
     - name: Run rustfmt with check mode
       run: |
-        shopt -s globstar
-        rustfmt **/*.rs --check
+        cargo fmt -- --check
 
     - uses: actions-rs/clippy-check@v1
       with:
