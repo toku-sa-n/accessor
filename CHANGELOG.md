@@ -6,6 +6,7 @@
 - Tests on CI are executed on stable Rust, not the nightly one ([#21](https://github.com/toku-sa-n/accessor/pull/21)).
 - Multiple lints that are allowed by default are now denied ([#22](https://github.com/toku-sa-n/accessor/pull/22)).
 - `rustfmt.toml` is deleted so that `cargo fmt` works on stable Rust ([#23](https://github.com/toku-sa-n/accessor/pull/23)).
+- Methods that are not ended with "volatile" like `Single::read` are now deprecated. Use methods ending with "volatile" like `Single::read_volatile` ([#24](https://github.com/toku-sa-n/accessor/pull/24)).
 
 ### Fixed
 - Clippy warnings are fixed ([#19](https://github.com/toku-sa-n/accessor/pull/19)).
