@@ -112,7 +112,9 @@ where
     /// Writes a value to the address that the accessor points to.
     pub fn write(&mut self, v: T) {
         // SAFETY: `Accessor::new` ensures that `self.virt` is aligned properly.
-        unsafe { ptr::write_volatile(self.virt as *mut _, v) }
+        unsafe {
+            ptr::write_volatile(self.virt as *mut _, v);
+        }
     }
 
     /// Updates a value that the accessor points by reading it, modifying it, and writing it.
@@ -177,7 +179,7 @@ where
     M: Mapper,
 {
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
-        self.read().hash(state)
+        self.read().hash(state);
     }
 }
 impl<T, M> Drop for Single<T, M>
