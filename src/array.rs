@@ -134,7 +134,9 @@ where
         assert!(i < self.len());
 
         // SAFETY: `Accessor::new_array` ensures that `self.addr(i)` is aligned properly.
-        unsafe { ptr::write_volatile(self.addr(i) as *mut _, v) }
+        unsafe {
+            ptr::write_volatile(self.addr(i) as *mut _, v);
+        }
     }
 
     /// Updates the `i`th element that the accessor points by reading it, modifying it, and writing it.
