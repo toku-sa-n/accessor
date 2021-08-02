@@ -3,7 +3,7 @@
 ## Unreleased - ReleaseDate
 ### Changed
 - Bors is no longer used for merging PRs ([#20](https://github.com/toku-sa-n/accessor/pull/20)).
-- Tests are executed on stable Rust, not the nightly one ([#21](https://github.com/toku-sa-n/accessor/pull/21)).
+- Tests on CI are executed on stable Rust, not the nightly one ([#21](https://github.com/toku-sa-n/accessor/pull/21)).
 
 ### Fixed
 - Clippy warnings are fixed ([#19](https://github.com/toku-sa-n/accessor/pull/19)).
