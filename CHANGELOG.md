@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased - ReleaseDate
+### Changed
+- Bors is no longer used for merging PRs ([#20](https://github.com/toku-sa-n/accessor/pull/20)).
+
 ### Fixed
 - Clippy warnings are fixed ([#19](https://github.com/toku-sa-n/accessor/pull/19)).
 
