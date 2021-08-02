@@ -17,7 +17,7 @@ The accessed type must implement [`Copy`] because reading and writing values nee
 
 This crate is `#[no_std]` compatible.
 
-```rust
+```rust,no_run
 use accessor::mapper::Mapper;
 use core::num::NonZeroUsize;
 
@@ -36,19 +36,19 @@ impl Mapper for M {
 let mut a = unsafe { accessor::Single::<i32, M>::new(0x1000, M) };
 
 // Read a value.
-a.read();
+a.read_volatile();
 
 // Write a value.
-a.write(3);
+a.write_volatile(3);
 
 // Create an accessor to an array at the physical address 0x2000 of the type i32 that has 5 elements.
 let mut arr = unsafe { accessor::Array::<i32, M>::new(0x2000, 5, M) };
 
 // Read the 2nd element.
-arr.read_at(2);
+arr.read_volatile_at(2);
 
 // Write 42 as the 0th element.
-arr.write_at(0, 42);
+arr.write_volatile_at(0, 42);
 ```
 
 License: MIT OR Apache-2.0
