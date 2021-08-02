@@ -126,7 +126,7 @@ where
     }
 
     /// Alias of [`Array::read_volatile_at`].
-    #[deprecated(note = "use `read_volatile_at`")]
+    #[deprecated(since = "0.3.1", note = "use `read_volatile_at`")]
     pub fn read_at(&self, i: usize) -> T {
         self.read_volatile_at(i)
     }
@@ -146,7 +146,7 @@ where
     }
 
     /// Alias of [`Array::write_volatile_at`].
-    #[deprecated(note = "use `write_volatile_at`")]
+    #[deprecated(since = "0.3.1", note = "use `write_volatile_at`")]
     pub fn write_at(&mut self, i: usize, v: T) {
         self.write_volatile_at(i, v)
     }
@@ -162,7 +162,7 @@ where
     }
 
     /// Alias of [`Array::update_volatile_at`].
-    #[deprecated(note = "use `update_volatile_at`")]
+    #[deprecated(since = "0.3.1", note = "use `update_volatile_at`")]
     pub fn update_at<U>(&mut self, i: usize, f: U)
     where
         U: FnOnce(&mut T),

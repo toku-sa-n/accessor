@@ -110,7 +110,7 @@ where
     }
 
     /// Alias of [`Single::read_volatile`].
-    #[deprecated(note = "use `read_volatile`")]
+    #[deprecated(since = "0.3.1", note = "use `read_volatile`")]
     pub fn read(&self) -> T {
         self.read_volatile()
     }
@@ -124,7 +124,7 @@ where
     }
 
     /// Alias of [`Single::write_volatile`].
-    #[deprecated(note = "use `write_volatile`")]
+    #[deprecated(since = "0.3.1", note = "use `write_volatile`")]
     pub fn write(&mut self, v: T) {
         self.write_volatile(v);
     }
@@ -144,7 +144,7 @@ where
     }
 
     /// Alias of [`Single::update_volatile`].
-    #[deprecated(note = "use `update_volatile`")]
+    #[deprecated(since = "0.3.1", note = "use `update_volatile`")]
     pub fn update<U>(&mut self, f: U)
     where
         U: FnOnce(&mut T),
