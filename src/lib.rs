@@ -49,6 +49,7 @@
 pub mod array;
 pub mod error;
 pub mod mapper;
+mod marker;
 pub mod single;
 
 pub use array::Array;
