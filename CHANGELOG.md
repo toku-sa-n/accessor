@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased - ReleaseDate
+### Changed
+- License and Contribution sections are added to README ([#27](https://github.com/toku-sa-n/accessor/pull/27)).
 
 ## 0.3.1 - 2021-08-03
 ### Changed
