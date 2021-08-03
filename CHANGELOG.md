@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased - ReleaseDate
+
+## 0.3.1 - 2021-08-03
 ### Changed
 - Bors is no longer used for merging PRs ([#20](https://github.com/toku-sa-n/accessor/pull/20)).
 - Tests on CI are executed on stable Rust, not the nightly one ([#21](https://github.com/toku-sa-n/accessor/pull/21)).
