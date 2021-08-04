@@ -16,6 +16,7 @@
 
 ### Changed
 - `single::Single` and `array::Array` are now deprecated in favor of `single::ReadWrite` and `array::ReadWrite` respectively ([#28](https://github.com/toku-sa-n/accessor/pull/28)).
+- An empty `dependencies` section in `Cargo.toml` is removed ([#31](https://github.com/toku-sa-n/accessor/pull/31)).
 
 ### Fixed
 - A wrong lint name which is enabled on CI was fixed ([#29](https://github.com/toku-sa-n/accessor/pull/29)).
