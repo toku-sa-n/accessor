@@ -1,8 +1,22 @@
 # Changelog
 
 ## Unreleased - ReleaseDate
+### Added
+- These structs are added ([#28](https://github.com/toku-sa-n/accessor/pull/28)).
+  - `single::Generic`
+  - `array::Generic`
+
+- These type aliases are added ([#28](https://github.com/toku-sa-n/accessor/pull/28)).
+  - `single::ReadWrite`
+  - `single::ReadOnly`
+  - `single::WriteOnly`
+  - `array::ReadWrite`
+  - `array::ReadOnly`
+  - `array::WriteOnly`
+
 ### Changed
 - License and Contribution sections are added to README ([#27](https://github.com/toku-sa-n/accessor/pull/27)).
+- `single::Single` and `array::Array` are now deprecated in favor of `single::ReadWrite` and `array::ReadWrite` respectively ([#28](https://github.com/toku-sa-n/accessor/pull/28)).
 
 ### Fixed
 - A wrong lint name which is enabled on CI was fixed ([#29](https://github.com/toku-sa-n/accessor/pull/29)).

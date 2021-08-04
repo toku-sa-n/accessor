@@ -1,7 +1,26 @@
 //! Accessor for an array
 
-use crate::{error::Error, mapper::Mapper};
-use core::{fmt, hash::Hash, marker::PhantomData, mem, ptr};
+use {
+    crate::{
+        error::Error,
+        mapper::Mapper,
+        marker::{self, AccessorTypeSpecifier, Readable, Writable},
+    },
+    core::{fmt, hash::Hash, marker::PhantomData, mem, ptr},
+};
+
+/// An alis of [`Array`]
+#[deprecated(since = "0.3.2", note = "Use `ReadWrite`.")]
+pub type Array<T, M> = ReadWrite<T, M>;
+
+/// A readable and writable accessor.
+pub type ReadWrite<T, M> = Generic<T, M, marker::ReadWrite>;
+
+/// A read-only accessor.
+pub type ReadOnly<T, M> = Generic<T, M, marker::ReadOnly>;
+
+/// A write-only accessor.
+pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 
 /// An accessor to read, modify, and write an array of some type on memory.
 ///
@@ -41,21 +60,24 @@ use core::{fmt, hash::Hash, marker::PhantomData, mem, ptr};
 ///     *v *= 2;
 /// });
 /// ```
-pub struct Array<T, M>
+pub struct Generic<T, M, A>
 where
     T: Copy,
     M: Mapper,
+    A: AccessorTypeSpecifier,
 {
     virt: usize,
     len: usize,
     _marker: PhantomData<T>,
+    _read_write: PhantomData<A>,
     mapper: M,
 }
 #[allow(clippy::len_without_is_empty)] // Array is never empty.
-impl<T, M> Array<T, M>
+impl<T, M, A> Generic<T, M, A>
 where
     T: Copy,
     M: Mapper,
+    A: AccessorTypeSpecifier,
 {
     /// Creates an accessor to `[T; len]` at the physical address `phys_base`.
     ///
@@ -82,6 +104,7 @@ where
             virt,
             len,
             _marker: PhantomData,
+            _read_write: PhantomData,
             mapper,
         }
     }
@@ -113,6 +136,25 @@ where
         }
     }
 
+    /// Returns the length of the array.
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    fn addr(&self, i: usize) -> usize {
+        self.virt + mem::size_of::<T>() * i
+    }
+
+    fn bytes(&self) -> usize {
+        mem::size_of::<T>() * self.len
+    }
+}
+impl<T, M, A> Generic<T, M, A>
+where
+    T: Copy,
+    M: Mapper,
+    A: Readable,
+{
     /// Reads the `i`th element from the address that the accessor points.
     ///
     /// # Panics
@@ -125,12 +167,18 @@ where
         unsafe { ptr::read_volatile(self.addr(i) as *const _) }
     }
 
-    /// Alias of [`Array::read_volatile_at`].
+    /// Alias of [`Generic::read_volatile_at`].
     #[deprecated(since = "0.3.1", note = "use `read_volatile_at`")]
     pub fn read_at(&self, i: usize) -> T {
         self.read_volatile_at(i)
     }
-
+}
+impl<T, M, A> Generic<T, M, A>
+where
+    T: Copy,
+    M: Mapper,
+    A: Writable,
+{
     /// Writes `v` as the `i`th element to the address that the accessor points to.
     ///
     /// # Panics
@@ -145,12 +193,18 @@ where
         }
     }
 
-    /// Alias of [`Array::write_volatile_at`].
+    /// Alias of [`Generic::write_volatile_at`].
     #[deprecated(since = "0.3.1", note = "use `write_volatile_at`")]
     pub fn write_at(&mut self, i: usize, v: T) {
         self.write_volatile_at(i, v);
     }
-
+}
+impl<T, M, A> Generic<T, M, A>
+where
+    T: Copy,
+    M: Mapper,
+    A: Readable + Writable,
+{
     /// Updates the `i`th element that the accessor points by reading it, modifying it, and writing it.
     pub fn update_volatile_at<U>(&mut self, i: usize, f: U)
     where
@@ -161,7 +215,7 @@ where
         self.write_volatile_at(i, v);
     }
 
-    /// Alias of [`Array::update_volatile_at`].
+    /// Alias of [`Generic::update_volatile_at`].
     #[deprecated(since = "0.3.1", note = "use `update_volatile_at`")]
     pub fn update_at<U>(&mut self, i: usize, f: U)
     where
@@ -169,33 +223,22 @@ where
     {
         self.update_volatile_at(i, f);
     }
-
-    /// Returns the length of the array.
-    pub fn len(&self) -> usize {
-        self.len
-    }
-
-    fn addr(&self, i: usize) -> usize {
-        self.virt + mem::size_of::<T>() * i
-    }
-
-    fn bytes(&self) -> usize {
-        mem::size_of::<T>() * self.len
-    }
 }
-impl<T, M> fmt::Debug for Array<T, M>
+impl<T, M, A> fmt::Debug for Generic<T, M, A>
 where
     T: Copy + fmt::Debug,
     M: Mapper,
+    A: Readable,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self).finish()
     }
 }
-impl<T, M> PartialEq for Array<T, M>
+impl<T, M, A> PartialEq for Generic<T, M, A>
 where
     T: Copy + PartialEq,
     M: Mapper,
+    A: Readable,
 {
     fn eq(&self, other: &Self) -> bool {
         self.into_iter()
@@ -204,16 +247,18 @@ where
             .all(|x| x)
     }
 }
-impl<T, M> Eq for Array<T, M>
+impl<T, M, A> Eq for Generic<T, M, A>
 where
     T: Copy + Eq,
     M: Mapper,
+    A: Readable,
 {
 }
-impl<T, M> Hash for Array<T, M>
+impl<T, M, A> Hash for Generic<T, M, A>
 where
     T: Copy + Hash,
     M: Mapper,
+    A: Readable,
 {
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         for e in self {
@@ -221,22 +266,24 @@ where
         }
     }
 }
-impl<'a, T, M> IntoIterator for &'a Array<T, M>
+impl<'a, T, M, A> IntoIterator for &'a Generic<T, M, A>
 where
     T: Copy,
     M: Mapper,
+    A: Readable,
 {
     type Item = T;
-    type IntoIter = Iter<'a, T, M>;
+    type IntoIter = Iter<'a, T, M, A>;
 
     fn into_iter(self) -> Self::IntoIter {
         Iter::new(self)
     }
 }
-impl<T, M> Drop for Array<T, M>
+impl<T, M, A> Drop for Generic<T, M, A>
 where
     T: Copy,
     M: Mapper,
+    A: AccessorTypeSpecifier,
 {
     fn drop(&mut self) {
         self.mapper.unmap(self.virt, self.bytes());
@@ -245,27 +292,30 @@ where
 
 /// An iterator over a value of `T`.
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub struct Iter<'a, T, M>
+pub struct Iter<'a, T, M, A>
 where
     T: Copy,
     M: Mapper,
+    A: Readable,
 {
-    a: &'a Array<T, M>,
+    a: &'a Generic<T, M, A>,
     i: usize,
 }
-impl<'a, T, M> Iter<'a, T, M>
+impl<'a, T, M, A> Iter<'a, T, M, A>
 where
     T: Copy,
     M: Mapper,
+    A: Readable,
 {
-    fn new(a: &'a Array<T, M>) -> Self {
+    fn new(a: &'a Generic<T, M, A>) -> Self {
         Self { a, i: 0 }
     }
 }
-impl<'a, T, M> Iterator for Iter<'a, T, M>
+impl<'a, T, M, A> Iterator for Iter<'a, T, M, A>
 where
     T: Copy,
     M: Mapper,
+    A: Readable,
 {
     type Item = T;
 

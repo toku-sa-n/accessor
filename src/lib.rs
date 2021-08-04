@@ -12,6 +12,7 @@
 //!
 //! ```no_run
 //! use accessor::mapper::Mapper;
+//! use accessor::single;
 //! use core::num::NonZeroUsize;
 //!
 //! struct M;
@@ -26,7 +27,7 @@
 //! }
 //!
 //! // Create an accessor to an i32 value at the physical address 0x1000.
-//! let mut a = unsafe { accessor::Single::<i32, M>::new(0x1000, M) };
+//! let mut a = unsafe { single::ReadWrite::<i32, M>::new(0x1000, M) };
 //!
 //! // Read a value.
 //! a.read();
@@ -49,12 +50,13 @@
 pub mod array;
 pub mod error;
 pub mod mapper;
+pub mod marker;
 pub mod single;
 
-pub use array::Array;
-pub use error::Error;
-pub use mapper::Mapper;
-pub use single::Single;
+#[allow(deprecated)]
+pub use {array::Array, single::Single};
+
+pub use {error::Error, mapper::Mapper};
 
 fn is_aligned<T>(phys_base: usize) -> bool {
     phys_base % core::mem::align_of::<T>() == 0
