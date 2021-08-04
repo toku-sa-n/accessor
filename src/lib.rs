@@ -18,11 +18,11 @@
 //! struct M;
 //! impl Mapper for M {
 //!     unsafe fn map(&mut self, phys_start: usize, bytes: usize) -> NonZeroUsize {
-//!         unimplemented!()
+//!         todo!()
 //!     }
 //!
 //!     fn unmap(&mut self, phys_start: usize, bytes: usize) {
-//!         unimplemented!()
+//!         todo!()
 //!     }
 //! }
 //!
