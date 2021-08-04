@@ -148,7 +148,7 @@ where
     /// Alias of [`Array::write_volatile_at`].
     #[deprecated(since = "0.3.1", note = "use `write_volatile_at`")]
     pub fn write_at(&mut self, i: usize, v: T) {
-        self.write_volatile_at(i, v)
+        self.write_volatile_at(i, v);
     }
 
     /// Updates the `i`th element that the accessor points by reading it, modifying it, and writing it.
@@ -167,7 +167,7 @@ where
     where
         U: FnOnce(&mut T),
     {
-        self.update_volatile_at(i, f)
+        self.update_volatile_at(i, f);
     }
 
     /// Returns the length of the array.
