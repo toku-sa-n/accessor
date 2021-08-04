@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [Unreleased]
 ### Added
 - These structs are added ([#28]).
   - `single::Generic`
@@ -66,6 +66,7 @@
 [#20]: https://github.com/toku-sa-n/accessor/pull/20
 [#19]: https://github.com/toku-sa-n/accessor/pull/19
 
+[Unreleased]: https://github.com/toku-sa-n/accessor/compare/v0.3.1...HEAD
 [0.3.1]: https://github.com/toku-sa-n/accessor/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/toku-sa-n/accessor/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/toku-sa-n/accessor/compare/v0.1.0...v0.2.0
