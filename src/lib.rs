@@ -53,7 +53,10 @@ pub mod mapper;
 pub mod marker;
 pub mod single;
 
-pub use {array::Array, error::Error, mapper::Mapper};
+#[allow(deprecated)]
+pub use array::Array;
+
+pub use {error::Error, mapper::Mapper};
 
 fn is_aligned<T>(phys_base: usize) -> bool {
     phys_base % core::mem::align_of::<T>() == 0
