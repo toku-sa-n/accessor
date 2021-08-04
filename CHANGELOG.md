@@ -4,6 +4,10 @@
 ### Changed
 - License and Contribution sections are added to README ([#27](https://github.com/toku-sa-n/accessor/pull/27)).
 
+### Fixed
+- A wrong lint name which is enabled on CI was fixed ([#29](https://github.com/toku-sa-n/accessor/pull/29)).
+- Clippy's lint errors are fixed ([#29](https://github.com/toku-sa-n/accessor/pull/29)).
+
 ## 0.3.1 - 2021-08-03
 ### Changed
 - Bors is no longer used for merging PRs ([#20](https://github.com/toku-sa-n/accessor/pull/20)).
