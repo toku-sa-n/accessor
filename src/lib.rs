@@ -54,7 +54,7 @@ pub mod marker;
 pub mod single;
 
 #[allow(deprecated)]
-pub use array::Array;
+pub use {array::Array, single::Single};
 
 pub use {error::Error, mapper::Mapper};
 
