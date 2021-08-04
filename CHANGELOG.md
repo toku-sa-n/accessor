@@ -5,7 +5,6 @@
 - These structs are added ([#28](https://github.com/toku-sa-n/accessor/pull/28)).
   - `single::Generic`
   - `array::Generic`
-
 - These type aliases are added ([#28](https://github.com/toku-sa-n/accessor/pull/28)).
   - `single::ReadWrite`
   - `single::ReadOnly`
@@ -13,9 +12,9 @@
   - `array::ReadWrite`
   - `array::ReadOnly`
   - `array::WriteOnly`
+- License and Contribution sections are added to README ([#27](https://github.com/toku-sa-n/accessor/pull/27)).
 
 ### Changed
-- License and Contribution sections are added to README ([#27](https://github.com/toku-sa-n/accessor/pull/27)).
 - `single::Single` and `array::Array` are now deprecated in favor of `single::ReadWrite` and `array::ReadWrite` respectively ([#28](https://github.com/toku-sa-n/accessor/pull/28)).
 
 ### Fixed
