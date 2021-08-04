@@ -11,16 +11,19 @@ pub trait Readable: AccessorTypeSpecifier {}
 pub trait Writable: AccessorTypeSpecifier {}
 
 /// A marker enum representing that the accessor can only read a value.
+#[derive(Copy, Clone, Debug)]
 pub enum ReadOnly {}
 impl AccessorTypeSpecifier for ReadOnly {}
 impl Readable for ReadOnly {}
 
 /// A marker enum representing that the accessor can only write a value.
+#[derive(Copy, Clone, Debug)]
 pub enum WriteOnly {}
 impl AccessorTypeSpecifier for WriteOnly {}
 impl Writable for WriteOnly {}
 
 /// A marker enum representing that the accessor can both read and write a value.
+#[derive(Copy, Clone, Debug)]
 pub enum ReadWrite {}
 impl AccessorTypeSpecifier for ReadWrite {}
 impl Readable for ReadWrite {}
