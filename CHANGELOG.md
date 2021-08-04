@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased - ReleaseDate
+## Unreleased
 ### Added
 - These structs are added ([#28]).
   - `single::Generic`
