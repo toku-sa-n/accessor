@@ -15,8 +15,11 @@
 - License and Contribution sections are added to README ([#27](https://github.com/toku-sa-n/accessor/pull/27)).
 
 ### Changed
-- `single::Single` and `array::Array` are now deprecated in favor of `single::ReadWrite` and `array::ReadWrite` respectively ([#28](https://github.com/toku-sa-n/accessor/pull/28)).
 - An empty `dependencies` section in `Cargo.toml` is removed ([#31](https://github.com/toku-sa-n/accessor/pull/31)).
+
+## Deprecated
+- `single::Single` in favor of `single::ReadWrite` ([#28](https://github.com/toku-sa-n/accessor/pull/28)).
+- `array::Array` in favor of `array::ReadWrite` ([#28](https://github.com/toku-sa-n/accessor/pull/28)).
 
 ### Fixed
 - A wrong lint name which is enabled on CI was fixed ([#29](https://github.com/toku-sa-n/accessor/pull/29)).
@@ -28,7 +31,9 @@
 - Tests on CI are executed on stable Rust, not the nightly one ([#21](https://github.com/toku-sa-n/accessor/pull/21)).
 - Multiple lints that are allowed by default are now denied ([#22](https://github.com/toku-sa-n/accessor/pull/22)).
 - `rustfmt.toml` is deleted so that `cargo fmt` works on stable Rust ([#23](https://github.com/toku-sa-n/accessor/pull/23)).
-- Methods that are not ended with "volatile" like `Single::read` are now deprecated. Use methods ending with "volatile" like `Single::read_volatile` ([#24](https://github.com/toku-sa-n/accessor/pull/24)).
+
+### Deprecated
+- Methods that are not ended with "volatile" like `Single::read` in favor of methods ending with "volatile" like `Single::read_volatile` ([#24](https://github.com/toku-sa-n/accessor/pull/24)).
 
 ### Fixed
 - Clippy warnings are fixed ([#19](https://github.com/toku-sa-n/accessor/pull/19)).
