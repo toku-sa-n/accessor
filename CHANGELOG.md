@@ -55,13 +55,13 @@
 ### Added
 - Initial version.
 
-[#19]: https://github.com/toku-sa-n/accessor/pull/19
-[#20]: https://github.com/toku-sa-n/accessor/pull/20
-[#21]: https://github.com/toku-sa-n/accessor/pull/21
-[#22]: https://github.com/toku-sa-n/accessor/pull/22
-[#23]: https://github.com/toku-sa-n/accessor/pull/23
-[#24]: https://github.com/toku-sa-n/accessor/pull/24
-[#27]: https://github.com/toku-sa-n/accessor/pull/27
-[#28]: https://github.com/toku-sa-n/accessor/pull/28
-[#29]: https://github.com/toku-sa-n/accessor/pull/29
 [#31]: https://github.com/toku-sa-n/accessor/pull/31
+[#29]: https://github.com/toku-sa-n/accessor/pull/29
+[#28]: https://github.com/toku-sa-n/accessor/pull/28
+[#27]: https://github.com/toku-sa-n/accessor/pull/27
+[#24]: https://github.com/toku-sa-n/accessor/pull/24
+[#23]: https://github.com/toku-sa-n/accessor/pull/23
+[#22]: https://github.com/toku-sa-n/accessor/pull/22
+[#21]: https://github.com/toku-sa-n/accessor/pull/21
+[#20]: https://github.com/toku-sa-n/accessor/pull/20
+[#19]: https://github.com/toku-sa-n/accessor/pull/19
