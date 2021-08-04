@@ -18,6 +18,7 @@
 - An empty `dependencies` section in `Cargo.toml` is removed ([#31]).
 - Changelog is improved ([#32]).
 - `todo!` is used instead of `unimplemented!` in the documentations. `todo!` indicates that the code should be implemented ([#33]).
+- The crate-level documentation is imported from `README.md` ([#34]).
 
 ## Deprecated
 - `single::Single` in favor of `single::ReadWrite` ([#28]).
@@ -57,6 +58,7 @@
 ### Added
 - Initial version.
 
+[#34]: https://github.com/toku-sa-n/accessor/pull/34
 [#33]: https://github.com/toku-sa-n/accessor/pull/33
 [#32]: https://github.com/toku-sa-n/accessor/pull/32
 [#31]: https://github.com/toku-sa-n/accessor/pull/31
