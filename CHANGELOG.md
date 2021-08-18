@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Changed
 - `Copy` trait bound is removed from `array::Generic` and `single::Generic ([#37]).
+- Tests on CI now runs `cargo test` and `cargo doc` ([#42]).
 
 ### Fixed
 - `no\_run` attribute is added to the code example in `README.md` to avoid a compile error ([#38]).
@@ -66,6 +67,7 @@
 ### Added
 - Initial version.
 
+[#42]: https://github.com/toku-sa-n/accessor/pull/42
 [#41]: https://github.com/toku-sa-n/accessor/pull/41
 [#39]: https://github.com/toku-sa-n/accessor/pull/39
 [#38]: https://github.com/toku-sa-n/accessor/pull/38
