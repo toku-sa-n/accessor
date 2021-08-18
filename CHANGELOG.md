@@ -4,6 +4,7 @@
 ### Fixed
 - `no_run` attribute is added to the code example in `README.md` to avoid a compile error ([#38]).
 - `Copy` trait bound is removed from `array::Generic` and `single::Generic ([#37]).
+- Renamed methods are used in the code example instead of deprecated ones ([#39]).
 
 ## [0.3.2] - 2021-08-04
 ### Added
@@ -63,6 +64,7 @@
 ### Added
 - Initial version.
 
+[#39]: https://github.com/toku-sa-n/accessor/pull/39
 [#38]: https://github.com/toku-sa-n/accessor/pull/38
 [#37]: https://github.com/toku-sa-n/accessor/pull/37
 [#34]: https://github.com/toku-sa-n/accessor/pull/34
