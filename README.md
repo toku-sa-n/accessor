@@ -17,7 +17,7 @@ The accessed type must implement [`Copy`] because reading and writing values nee
 
 This crate is `#[no_std]` compatible.
 
-```rust
+```rust,no_run
 use accessor::mapper::Mapper;
 use core::num::NonZeroUsize;
 
