@@ -26,6 +26,9 @@ pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 ///
 /// When accessing to an element of the array, the index starts from 0.
 ///
+/// `T` does not need to implement [`Copy`]. However, be careful that [`Generic::read_volatile_at`]
+/// creates and [`Generic::write_volatile_at`] writes a bitwise copy of a value.
+///
 /// # Examples
 ///
 /// ```no_run
@@ -62,7 +65,6 @@ pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 /// ```
 pub struct Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: AccessorTypeSpecifier,
 {
@@ -75,7 +77,6 @@ where
 #[allow(clippy::len_without_is_empty)] // Array is never empty.
 impl<T, M, A> Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: AccessorTypeSpecifier,
 {
@@ -151,7 +152,6 @@ where
 }
 impl<T, M, A> Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: Readable,
 {
@@ -175,7 +175,6 @@ where
 }
 impl<T, M, A> Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: Writable,
 {
@@ -201,7 +200,6 @@ where
 }
 impl<T, M, A> Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: Readable + Writable,
 {
@@ -226,7 +224,7 @@ where
 }
 impl<T, M, A> fmt::Debug for Generic<T, M, A>
 where
-    T: Copy + fmt::Debug,
+    T: fmt::Debug,
     M: Mapper,
     A: Readable,
 {
@@ -236,7 +234,7 @@ where
 }
 impl<T, M, A> PartialEq for Generic<T, M, A>
 where
-    T: Copy + PartialEq,
+    T: PartialEq,
     M: Mapper,
     A: Readable,
 {
@@ -249,14 +247,14 @@ where
 }
 impl<T, M, A> Eq for Generic<T, M, A>
 where
-    T: Copy + Eq,
+    T: Eq,
     M: Mapper,
     A: Readable,
 {
 }
 impl<T, M, A> Hash for Generic<T, M, A>
 where
-    T: Copy + Hash,
+    T: Hash,
     M: Mapper,
     A: Readable,
 {
@@ -268,7 +266,6 @@ where
 }
 impl<'a, T, M, A> IntoIterator for &'a Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: Readable,
 {
@@ -281,7 +278,6 @@ where
 }
 impl<T, M, A> Drop for Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: AccessorTypeSpecifier,
 {
@@ -294,7 +290,6 @@ where
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct Iter<'a, T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: Readable,
 {
@@ -303,7 +298,6 @@ where
 }
 impl<'a, T, M, A> Iter<'a, T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: Readable,
 {
@@ -313,7 +307,6 @@ where
 }
 impl<'a, T, M, A> Iterator for Iter<'a, T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: Readable,
 {
