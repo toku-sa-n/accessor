@@ -24,6 +24,9 @@ pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 
 /// An accessor to read, modify, and write a single value of memory.
 ///
+/// `T` does not need to implement [`Copy`]. However, be careful that [`Generic::read_volatile`]
+/// creates and [`Generic::write_volatile`] writes a bitwise copy of a value.
+///
 /// # Examples
 ///
 /// ```no_run
@@ -60,7 +63,6 @@ pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 /// ```
 pub struct Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: AccessorTypeSpecifier,
 {
@@ -72,7 +74,6 @@ where
 }
 impl<T, M, A> Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: AccessorTypeSpecifier,
 {
@@ -129,7 +130,6 @@ where
 }
 impl<T, M, A> Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: Readable,
 {
@@ -147,7 +147,6 @@ where
 }
 impl<T, M, A> Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: Writable,
 {
@@ -167,7 +166,6 @@ where
 }
 impl<T, M, A> Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: Readable + Writable,
 {
@@ -196,7 +194,7 @@ where
 }
 impl<T, M, A> fmt::Debug for Generic<T, M, A>
 where
-    T: Copy + fmt::Debug,
+    T: fmt::Debug,
     M: Mapper,
     A: Readable,
 {
@@ -206,7 +204,7 @@ where
 }
 impl<T, M, A> PartialEq for Generic<T, M, A>
 where
-    T: Copy + PartialEq,
+    T: PartialEq,
     M: Mapper,
     A: Readable,
 {
@@ -216,14 +214,14 @@ where
 }
 impl<T, M, A> Eq for Generic<T, M, A>
 where
-    T: Copy + Eq,
+    T: Eq,
     M: Mapper,
     A: Readable,
 {
 }
 impl<T, M, A> PartialOrd for Generic<T, M, A>
 where
-    T: Copy + PartialOrd,
+    T: PartialOrd,
     M: Mapper,
     A: Readable,
 {
@@ -233,7 +231,7 @@ where
 }
 impl<T, M, A> Ord for Generic<T, M, A>
 where
-    T: Copy + Ord,
+    T: Ord,
     M: Mapper,
     A: Readable,
 {
@@ -243,7 +241,7 @@ where
 }
 impl<T, M, A> Hash for Generic<T, M, A>
 where
-    T: Copy + Hash,
+    T: Hash,
     M: Mapper,
     A: Readable,
 {
@@ -253,7 +251,6 @@ where
 }
 impl<T, M, A> Drop for Generic<T, M, A>
 where
-    T: Copy,
     M: Mapper,
     A: AccessorTypeSpecifier,
 {
