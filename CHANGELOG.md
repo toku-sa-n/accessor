@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.3.3] - 2021-08-18
 ### Changed
 - `Copy` trait bound is removed from `array::Generic` and `single::Generic ([#37]).
 - Tests on CI now runs `cargo test` and `cargo doc` ([#42]).
@@ -86,7 +88,8 @@
 [#20]: https://github.com/toku-sa-n/accessor/pull/20
 [#19]: https://github.com/toku-sa-n/accessor/pull/19
 
-[Unreleased]: https://github.com/toku-sa-n/accessor/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/toku-sa-n/accessor/compare/v0.3.3...HEAD
+[0.3.3]: https://github.com/toku-sa-n/accessor/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/toku-sa-n/accessor/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/toku-sa-n/accessor/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/toku-sa-n/accessor/compare/v0.2.0...v0.3.0
