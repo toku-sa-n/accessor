@@ -1,9 +1,11 @@
 # Changelog
 
 ## [Unreleased]
-### Fixed
-- `no_run` attribute is added to the code example in `README.md` to avoid a compile error ([#38]).
+### Changed
 - `Copy` trait bound is removed from `array::Generic` and `single::Generic ([#37]).
+
+### Fixed
+- `no\_run` attribute is added to the code example in `README.md` to avoid a compile error ([#38]).
 - Renamed methods are used in the code example instead of deprecated ones ([#39]).
 
 ## [0.3.2] - 2021-08-04
