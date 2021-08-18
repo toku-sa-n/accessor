@@ -23,5 +23,11 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         args: -- -D clippy::pedantic -D clippy::all
 
+    - name: Build docs for checking syntax
+      run: cargo doc
+
     - name: Build
       run: cargo build
+
+    - name: Test
+      run: cargo test
