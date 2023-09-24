@@ -28,10 +28,63 @@ pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 pub struct LifetimedGeneric<'a, T, M, A>
 where
     M: Mapper,
-    A: AccessorTypeSpecifier
+    A: AccessorTypeSpecifier + 'static
 {
     pub access: single::Generic<T, M, A>,
     _lifetime: PhantomData<&'a Generic<T, M, A>>
+}
+
+/// For a field struct type [`T`], add `#[derive(LifetimedSetGenericOf)]` before the struct definition
+/// then `LifetimedSetGenericOfT<'a, M, A>` type will be derived, which is more convenient
+/// than [`LifetimedGeneric<'a, T, M, a>`].
+pub use accessor_macros::LifetimedSetGenericOf;
+
+/// Combined with proc-macro [`LifetimedSetGenericOf`], this trait converts array accessors of field struct types into a struct of accessors with same field names.
+/// 
+/// This trait is intended to be implemented automatically by [`LifetimedSetGenericOf`] expansion. Users should not implement this manually.
+///
+/// # Examples
+/// 
+/// ```no_run
+/// use accessor::mapper::Identity;
+/// use accessor::array::{LifetimedSetGeneric, LifetimedSetGenericOf};
+/// 
+/// #[repr(C)]
+/// #[derive(Clone, Copy, LifetimedSetGenericOf)]
+/// struct Foo {
+///     x: u32,
+///     y: u32,
+/// }
+/// 
+/// // The above derivation creates a struct-of-accessor type called `LifetimedSetGenericOfFoo` which is roughly equivalent to:
+/// // ```
+/// // struct LifetimedSetGenericOfFoo {
+/// //     x: accessor::single::ReadWrite::<u32, M>,
+/// //     y: accessor::single::ReadWrite::<u32, M>,
+/// // }
+/// // ```
+/// // The derivation also implements `LifetimedSetGeneric<Foo, M, A>`
+/// // so that a `accessor::array::ReadWrite::<Foo, M>` instance can be indexed into a `LifetimedSetGenericOfFoo` item, which has a lifetime bound to the base array accessor.
+/// 
+/// let mut a = unsafe { accessor::array::ReadWrite::<u32, M>::new(0x1000, 10, Identity) };
+/// 
+/// // read `x` field of 0th element of the array.
+/// let x = a.set_at(0).x.read_volatile();
+/// 
+/// // write 5 as the `y` field of 2nd element of the array.
+/// a.set_at(2).y.write_volatile(5);
+/// 
+/// ```
+/// 
+pub trait LifetimedSetGeneric<T, M, A>
+where
+    M: Mapper,
+    A: AccessorTypeSpecifier + 'static,
+{
+    type LifetimedSetGenericType<'a>
+    where Self: 'a;
+
+    fn set_at<'a>(&'a self, i: usize) -> Self::LifetimedSetGenericType<'a>;
 }
 
 /// An accessor to read, modify, and write an array of some type on memory.
@@ -62,7 +115,7 @@ where
 ///
 /// // Create an accessor to the array at the physical address 0x1000 that has 10 elements
 /// // of i32 type.
-/// let mut a = unsafe { accessor::Array::<u32, M>::new(0x1000, 10, mapper) };
+/// let mut a = unsafe { accessor::array::ReadWrite::<u32, M>::new(0x1000, 10, mapper) };
 ///
 /// // Read the 3rd element of the array.
 /// a.read_volatile_at(3);
@@ -179,8 +232,20 @@ where
         self.len
     }
 
-    fn addr(&self, i: usize) -> usize {
+    /// Returns the virtual address of the item of index `i`.
+    /// This is public but hidden, since this method should be called in `accessor_macros::LifetimedSetGenericOf` proc-macro expansion.
+    /// Users of this crate are not intended to call this.
+    #[doc(hidden)]
+    pub unsafe fn addr(&self, i: usize) -> usize {
         self.virt + mem::size_of::<T>() * i
+    }
+
+    /// Clones the mapper and return it. Does not expose the mapper itself.
+    /// This is public but hidden, since this method should be called in `accessor_macros::LifetimedSetGenericOf` proc-macro expansion.
+    /// Users of this crate are not intended to call this.
+    #[doc(hidden)]
+    pub unsafe fn mapper_clone(&self) -> M {
+        self.mapper.clone()
     }
 
     fn bytes(&self) -> usize {

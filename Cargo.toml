@@ -21,3 +21,7 @@ keywords = ["no_std", "OS"]
 categories = ["no-std", "os"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/toku-sa-n/accessor"
+
+[dependencies]
+accessor_macros = { path = "./accessor_macros" }
+memoffset = "0.9.0"
