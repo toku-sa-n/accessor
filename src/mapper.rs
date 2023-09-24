@@ -3,7 +3,7 @@
 use core::num::NonZeroUsize;
 
 /// A mapper trait for accessing physical memory.
-pub trait Mapper: Clone {
+pub trait Mapper {
     /// Maps `bytes` bytes of physical memory region starting from `phys_start` and returns the
     /// first virtual address.
     ///

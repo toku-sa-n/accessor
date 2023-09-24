@@ -23,48 +23,107 @@ pub type ReadOnly<T, M> = Generic<T, M, marker::ReadOnly>;
 /// A write-only accessor.
 pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 
-/// Lifetimed wrapper of a single-element accessor.
+/// Bound wrapper of a single-element accessor.
 /// The lifetime is set to the lifetime of its array accessor.
-pub struct LifetimedGeneric<'a, T, M, A>
+pub struct BoundGeneric<'a, T, M, A>
 where
-    M: Mapper,
+    M: Mapper + Clone,
     A: AccessorTypeSpecifier + 'static
 {
-    pub access: single::Generic<T, M, A>,
+    access: single::Generic<T, M, A>,
     _lifetime: PhantomData<&'a Generic<T, M, A>>
 }
 
-/// For a field struct type [`T`], add `#[derive(LifetimedSetGenericOf)]` before the struct definition
-/// then `LifetimedSetGenericOfT<'a, M, A>` type will be derived, which is more convenient
-/// than [`LifetimedGeneric<'a, T, M, a>`].
-pub use accessor_macros::LifetimedSetGenericOf;
+impl<'a, T, M, A> BoundGeneric<'a, T, M, A>
+where
+    M: Mapper + Clone,
+    A: Readable,
+{
+    /// Reads a value from the address that the accessor points to.
+    pub fn read_volatile(&self) -> T {
+        self.access.read_volatile()
+    }
 
-/// Combined with proc-macro [`LifetimedSetGenericOf`], this trait converts array accessors of field struct types into a struct of accessors with same field names.
+    /// Alias of [`BoundGeneric::read_volatile`].
+    #[deprecated(since = "0.3.1", note = "use `read_volatile`")]
+    pub fn read(&self) -> T {
+        self.read_volatile()
+    }
+}
+impl<'a, T, M, A> BoundGeneric<'a, T, M, A>
+where
+    M: Mapper + Clone,
+    A: Writable,
+{
+    /// Writes a value to the address that the accessor points to.
+    pub fn write_volatile(&mut self, v: T) {
+        self.access.write_volatile(v);
+    }
+
+    /// Alias of [`BoundGeneric::write_volatile`].
+    #[deprecated(since = "0.3.1", note = "use `write_volatile`")]
+    pub fn write(&mut self, v: T) {
+        self.write_volatile(v);
+    }
+}
+impl<'a, T, M, A> BoundGeneric<'a, T, M, A>
+where
+    M: Mapper + Clone,
+    A: Readable + Writable,
+{
+    /// Updates a value that the accessor points by reading it, modifying it, and writing it.
+    ///
+    /// Note that some MMIO regions (e.g. the Command Ring Pointer field of the Command
+    /// Ring Control Register of the xHCI) may return 0 regardless of the actual values of the
+    /// fields. For these regions, this operation should be called only once.
+    pub fn update_volatile<U>(&mut self, f: U)
+    where
+        U: FnOnce(&mut T),
+    {
+        self.access.update_volatile(f);
+    }
+
+    /// Alias of [`BoundGeneric::update_volatile`].
+    #[deprecated(since = "0.3.1", note = "use `update_volatile`")]
+    pub fn update<U>(&mut self, f: U)
+    where
+        U: FnOnce(&mut T),
+    {
+        self.update_volatile(f);
+    }
+}
+
+/// For a field struct type [`T`], add `#[derive(BoundSetGenericOf)]` before the struct definition
+/// then `BoundSetGenericOfT<'a, M, A>` type will be derived, which is more convenient
+/// than [`BoundGeneric<'a, T, M, a>`].
+pub use accessor_macros::BoundSetGenericOf;
+
+/// Combined with proc-macro [`BoundSetGenericOf`], this trait converts array accessors of field struct types into a struct of accessors with same field names.
 /// 
-/// This trait is intended to be implemented automatically by [`LifetimedSetGenericOf`] expansion. Users should not implement this manually.
+/// This trait is intended to be implemented automatically by [`BoundSetGenericOf`] expansion. Users should not implement this manually.
 ///
 /// # Examples
 /// 
 /// ```no_run
 /// use accessor::mapper::Identity;
-/// use accessor::array::{LifetimedSetGeneric, LifetimedSetGenericOf};
+/// use accessor::array::{BoundSetGeneric, BoundSetGenericOf};
 /// 
 /// #[repr(C)]
-/// #[derive(Clone, Copy, LifetimedSetGenericOf)]
+/// #[derive(Clone, Copy, BoundSetGenericOf)]
 /// struct Foo {
 ///     x: u32,
 ///     y: u32,
 /// }
 /// 
-/// // The above derivation creates a struct-of-accessor type called `LifetimedSetGenericOfFoo` which is roughly equivalent to:
+/// // The above derivation creates a struct-of-accessor type called `BoundSetGenericOfFoo` which is roughly equivalent to:
 /// // ```
-/// // struct LifetimedSetGenericOfFoo {
+/// // struct BoundSetGenericOfFoo {
 /// //     x: accessor::single::ReadWrite::<u32, M>,
 /// //     y: accessor::single::ReadWrite::<u32, M>,
 /// // }
 /// // ```
-/// // The derivation also implements `LifetimedSetGeneric<Foo, M, A>`
-/// // so that a `accessor::array::ReadWrite::<Foo, M>` instance can be indexed into a `LifetimedSetGenericOfFoo` item, which has a lifetime bound to the base array accessor.
+/// // The derivation also implements `BoundSetGeneric<Foo, M, A>`
+/// // so that a `accessor::array::ReadWrite::<Foo, M>` instance can be indexed into a `BoundSetGenericOfFoo` item, which has a lifetime bound to the base array accessor.
 /// 
 /// let mut a = unsafe { accessor::array::ReadWrite::<u32, M>::new(0x1000, 10, Identity) };
 /// 
@@ -76,15 +135,15 @@ pub use accessor_macros::LifetimedSetGenericOf;
 /// 
 /// ```
 /// 
-pub trait LifetimedSetGeneric<T, M, A>
+pub trait BoundSetGeneric<T, M, A>
 where
-    M: Mapper,
+    M: Mapper + Clone,
     A: AccessorTypeSpecifier + 'static,
 {
-    type LifetimedSetGenericType<'a>
+    type BoundSetGenericType<'a>
     where Self: 'a;
 
-    fn set_at<'a>(&'a self, i: usize) -> Self::LifetimedSetGenericType<'a>;
+    fn set_at<'a>(&'a self, i: usize) -> Self::BoundSetGenericType<'a>;
 }
 
 /// An accessor to read, modify, and write an array of some type on memory.
@@ -128,7 +187,8 @@ where
 ///     *v *= 2;
 /// });
 /// 
-/// // Below are the equivalent examples using `a.at()` method.
+/// // Below are the equivalent examples using `a.at()` method,
+/// // only available when the mapper type [`M`] implements [`Clone`].
 /// 
 /// // Read the 3rd element of the array.
 /// a.at(3).read_volatile();
@@ -216,42 +276,49 @@ where
         }
     }
 
-    /// Returns `i`th element as a lifetimed single element accessor.
-    pub fn at<'a>(&'a self, i: usize) -> LifetimedGeneric<'a, T, M, A> {
-        assert!(i < self.len);
-        unsafe {
-            LifetimedGeneric {
-                access: single::Generic::new(self.addr(i), self.mapper.clone()),
-                _lifetime: PhantomData
-            }
-        }
-    }
-
     /// Returns the length of the array.
     pub fn len(&self) -> usize {
         self.len
     }
 
     /// Returns the virtual address of the item of index `i`.
-    /// This is public but hidden, since this method should be called in `accessor_macros::LifetimedSetGenericOf` proc-macro expansion.
+    /// This is public but hidden, since this method should be called in `accessor_macros::BoundSetGenericOf` proc-macro expansion.
     /// Users of this crate are not intended to call this.
     #[doc(hidden)]
     pub unsafe fn addr(&self, i: usize) -> usize {
         self.virt + mem::size_of::<T>() * i
     }
 
+    fn bytes(&self) -> usize {
+        mem::size_of::<T>() * self.len
+    }
+}
+
+impl<T, M, A> Generic<T, M, A>
+where
+    M: Mapper + Clone,
+    A: AccessorTypeSpecifier,
+{
+    /// Returns `i`th element as a lifetimed single element accessor.
+    pub fn at<'a>(&'a self, i: usize) -> BoundGeneric<'a, T, M, A> {
+        assert!(i < self.len);
+        unsafe {
+            BoundGeneric {
+                access: single::Generic::new(self.addr(i), self.mapper.clone()),
+                _lifetime: PhantomData
+            }
+        }
+    }
+
     /// Clones the mapper and return it. Does not expose the mapper itself.
-    /// This is public but hidden, since this method should be called in `accessor_macros::LifetimedSetGenericOf` proc-macro expansion.
+    /// This is public but hidden, since this method should be called in `accessor_macros::BoundSetGenericOf` proc-macro expansion.
     /// Users of this crate are not intended to call this.
     #[doc(hidden)]
     pub unsafe fn mapper_clone(&self) -> M {
         self.mapper.clone()
     }
-
-    fn bytes(&self) -> usize {
-        mem::size_of::<T>() * self.len
-    }
 }
+
 impl<T, M, A> Generic<T, M, A>
 where
     M: Mapper,
