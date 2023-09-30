@@ -28,10 +28,10 @@ pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 pub struct BoundGeneric<'a, T, M, A>
 where
     M: Mapper + Clone,
-    A: AccessorTypeSpecifier + 'static
+    A: AccessorTypeSpecifier + 'static,
 {
     access: single::Generic<T, M, A>,
-    _lifetime: PhantomData<&'a Generic<T, M, A>>
+    _lifetime: PhantomData<&'a Generic<T, M, A>>,
 }
 
 impl<'a, T, M, A> BoundGeneric<'a, T, M, A>
@@ -99,22 +99,22 @@ where
 pub use accessor_macros::BoundSetGenericOf;
 
 /// Combined with proc-macro [`BoundSetGenericOf`], this trait converts array accessors of field struct types into a struct of accessors with same field names.
-/// 
+///
 /// This trait is intended to be implemented automatically by [`BoundSetGenericOf`] expansion. Users should not implement this manually.
 ///
 /// # Examples
-/// 
+///
 /// ```no_run
 /// use accessor::mapper::Identity;
 /// use accessor::array::{BoundSetGeneric, BoundSetGenericOf};
-/// 
+///
 /// #[repr(C)]
 /// #[derive(Clone, Copy, BoundSetGenericOf)]
 /// struct Foo {
 ///     x: u32,
 ///     y: u32,
 /// }
-/// 
+///
 /// // The above derivation creates a struct-of-accessor type called `BoundSetGenericOfFoo` which is roughly equivalent to:
 /// // ```
 /// // struct BoundSetGenericOfFoo {
@@ -124,26 +124,27 @@ pub use accessor_macros::BoundSetGenericOf;
 /// // ```
 /// // The derivation also implements `BoundSetGeneric<Foo, M, A>`
 /// // so that a `accessor::array::ReadWrite::<Foo, M>` instance can be indexed into a `BoundSetGenericOfFoo` item, which has a lifetime bound to the base array accessor.
-/// 
+///
 /// let mut a = unsafe { accessor::array::ReadWrite::<u32, M>::new(0x1000, 10, Identity) };
-/// 
+///
 /// // read `x` field of 0th element of the array.
 /// let x = a.set_at(0).x.read_volatile();
-/// 
+///
 /// // write 5 as the `y` field of 2nd element of the array.
 /// a.set_at(2).y.write_volatile(5);
-/// 
+///
 /// ```
-/// 
+///
 pub trait BoundSetGeneric<T, M, A>
 where
     M: Mapper + Clone,
     A: AccessorTypeSpecifier + 'static,
 {
     type BoundSetGenericType<'a>
-    where Self: 'a;
+    where
+        Self: 'a;
 
-    fn set_at<'a>(&'a self, i: usize) -> Self::BoundSetGenericType<'a>;
+    fn set_at(&self, i: usize) -> Self::BoundSetGenericType<'_>;
 }
 
 /// An accessor to read, modify, and write an array of some type on memory.
@@ -186,21 +187,21 @@ where
 /// a.update_volatile_at(0, |v| {
 ///     *v *= 2;
 /// });
-/// 
+///
 /// // Below are the equivalent examples using `a.at()` method,
 /// // only available when the mapper type [`M`] implements [`Clone`].
-/// 
+///
 /// // Read the 3rd element of the array.
 /// a.at(3).read_volatile();
-/// 
+///
 /// // Write 42 as the 5th element of the array.
 /// a.at(5).write_volatile(42);
-/// 
+///
 /// // Update the 0th element.
 /// a.at(0).update_volatile(|v| {
 ///     *v *= 2;
 /// })
-/// 
+///
 /// ```
 pub struct Generic<T, M, A>
 where
@@ -300,12 +301,12 @@ where
     A: AccessorTypeSpecifier,
 {
     /// Returns `i`th element as a lifetimed single element accessor.
-    pub fn at<'a>(&'a self, i: usize) -> BoundGeneric<'a, T, M, A> {
+    pub fn at(&self, i: usize) -> BoundGeneric<'_, T, M, A> {
         assert!(i < self.len);
         unsafe {
             BoundGeneric {
                 access: single::Generic::new(self.addr(i), self.mapper.clone()),
-                _lifetime: PhantomData
+                _lifetime: PhantomData,
             }
         }
     }
@@ -409,7 +410,7 @@ where
 {
     fn eq(&self, other: &Self) -> bool {
         self.into_iter()
-            .zip(other.into_iter())
+            .zip(other)
             .map(|(a, b)| a.eq(&b))
             .all(|x| x)
     }

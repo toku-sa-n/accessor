@@ -62,5 +62,5 @@ impl Mapper for Identity {
         NonZeroUsize::new_unchecked(phys_base)
     }
     #[allow(unused_variables)]
-    fn unmap(&mut self, virt_base: usize, bytes: usize) { }
+    fn unmap(&mut self, virt_base: usize, bytes: usize) {}
 }

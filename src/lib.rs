@@ -1,11 +1,11 @@
 #![doc = include_str!("../README.md")]
 #![no_std]
 
+pub mod array;
 pub mod error;
 pub mod mapper;
 pub mod marker;
 pub mod single;
-pub mod array;
 
 #[allow(deprecated)]
 pub use {array::Array, single::Single};
