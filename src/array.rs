@@ -3,7 +3,7 @@
 use {
     crate::{
         error::Error,
-        mapper::Mapper,
+        mapper::{Identity, Mapper},
         marker::{self, AccessorTypeSpecifier, Readable, Writable},
         single,
     },
@@ -27,16 +27,16 @@ pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 /// The lifetime is set to the lifetime of its array accessor.
 pub struct BoundGeneric<'a, T, M, A>
 where
-    M: Mapper + Clone,
+    M: Mapper,
     A: AccessorTypeSpecifier + 'static,
 {
-    access: single::Generic<T, M, A>,
+    access: single::Generic<T, Identity, A>,
     _lifetime: PhantomData<&'a Generic<T, M, A>>,
 }
 
 impl<'a, T, M, A> BoundGeneric<'a, T, M, A>
 where
-    M: Mapper + Clone,
+    M: Mapper,
     A: Readable,
 {
     /// Reads a value from the address that the accessor points to.
@@ -52,7 +52,7 @@ where
 }
 impl<'a, T, M, A> BoundGeneric<'a, T, M, A>
 where
-    M: Mapper + Clone,
+    M: Mapper,
     A: Writable,
 {
     /// Writes a value to the address that the accessor points to.
@@ -68,7 +68,7 @@ where
 }
 impl<'a, T, M, A> BoundGeneric<'a, T, M, A>
 where
-    M: Mapper + Clone,
+    M: Mapper,
     A: Readable + Writable,
 {
     /// Updates a value that the accessor points by reading it, modifying it, and writing it.
@@ -137,7 +137,7 @@ pub use accessor_macros::BoundSetGenericOf;
 ///
 pub trait BoundSetGeneric<T, M, A>
 where
-    M: Mapper + Clone,
+    M: Mapper,
     A: AccessorTypeSpecifier + 'static,
 {
     type BoundSetGenericType<'a>
@@ -188,8 +188,7 @@ where
 ///     *v *= 2;
 /// });
 ///
-/// // Below are the equivalent examples using `a.at()` method,
-/// // only available when the mapper type [`M`] implements [`Clone`].
+/// // Below are the equivalent examples using `.at()` method.
 ///
 /// // Read the 3rd element of the array.
 /// a.at(3).read_volatile();
@@ -297,7 +296,7 @@ where
 
 impl<T, M, A> Generic<T, M, A>
 where
-    M: Mapper + Clone,
+    M: Mapper,
     A: AccessorTypeSpecifier,
 {
     /// Returns `i`th element as a lifetimed single element accessor.
@@ -305,18 +304,10 @@ where
         assert!(i < self.len);
         unsafe {
             BoundGeneric {
-                access: single::Generic::new(self.addr(i), self.mapper.clone()),
+                access: single::Generic::new(self.addr(i), Identity),
                 _lifetime: PhantomData,
             }
         }
-    }
-
-    /// Clones the mapper and return it. Does not expose the mapper itself.
-    /// This is public but hidden, since this method should be called in `accessor_macros::BoundSetGenericOf` proc-macro expansion.
-    /// Users of this crate are not intended to call this.
-    #[doc(hidden)]
-    pub unsafe fn mapper_clone(&self) -> M {
-        self.mapper.clone()
     }
 }
 

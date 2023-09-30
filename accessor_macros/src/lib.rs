@@ -31,7 +31,7 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
             let ident = field.ident.as_ref().unwrap().clone();
             let ty = field.ty.clone();
             quote! {
-                #vis #ident: accessor::single::Generic<#ty, M, A>,
+                #vis #ident: accessor::single::Generic<#ty, accessor::mapper::Identity, A>,
             }
         });
     
@@ -39,7 +39,7 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
         .map(|field| {
             let ident = field.ident.as_ref().unwrap().clone();
             quote! {
-                #ident: accessor::single::Generic::new(addr + accessor::memoffset::offset_of!(#orig_ident, #ident), self.mapper_clone()),
+                #ident: accessor::single::Generic::new(addr + accessor::memoffset::offset_of!(#orig_ident, #ident), accessor::mapper::Identity),
             }
         });
     
@@ -48,7 +48,7 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
         #[allow(missing_debug_implementations)]
         #vis struct #bound_ident<'a, M, A>
         where
-            M: accessor::mapper::Mapper + Clone,
+            M: accessor::mapper::Mapper,
             A: accessor::marker::AccessorTypeSpecifier,
         {
             #(#_field_var)*
@@ -57,13 +57,13 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
 
         impl<M, A> accessor::array::BoundSetGeneric<#orig_ident, M, A> for accessor::array::Generic<#orig_ident, M, A>
         where
-            M: accessor::mapper::Mapper + Clone,
+            M: accessor::mapper::Mapper,
             A: accessor::marker::AccessorTypeSpecifier + 'static,
         {
-            type BoundSetGenericType<'a> = #bound_ident<'a, M, A>
+            type BoundSetGenericType<'a> = #bound_ident<'a, accessor::mapper::Identity, A>
             where Self: 'a;
 
-            fn set_at<'a>(&'a self, i: usize) -> #bound_ident<'a, M, A> {
+            fn set_at<'a>(&'a self, i: usize) -> #bound_ident<'a, accessor::mapper::Identity, A> {
                 assert!(i < self.len());
                 unsafe {
                     let addr = self.addr(i);
