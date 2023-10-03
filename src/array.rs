@@ -418,7 +418,7 @@ where
 {
     fn eq(&self, other: &Self) -> bool {
         self.into_iter()
-            .zip(other)
+            .zip(other.into_iter())
             .map(|(a, b)| a.eq(&b))
             .all(|x| x)
     }
