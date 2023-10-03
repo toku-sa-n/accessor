@@ -12,6 +12,7 @@ pub use {array::Array, single::Single};
 
 pub use {error::Error, mapper::Mapper};
 
+#[doc(hidden)]
 pub use memoffset;
 
 fn is_aligned<T>(phys_base: usize) -> bool {
