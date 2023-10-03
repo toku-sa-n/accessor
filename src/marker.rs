@@ -2,7 +2,7 @@
 
 /// A marker trait representing that the type implementing this can be used to specify the type of
 /// an accessor (whether it can read a value, write a value, or both).
-pub trait AccessorTypeSpecifier: Copy {}
+pub trait AccessorTypeSpecifier {}
 
 /// A marker trait representing that the accessor can read a value.
 pub trait Readable: AccessorTypeSpecifier {}

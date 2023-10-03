@@ -30,7 +30,7 @@ where
     M: Mapper,
     A: AccessorTypeSpecifier + 'static,
 {
-    access: single::Generic<T, Identity, A>,
+    a: single::Generic<T, Identity, A>,
     _lifetime: PhantomData<&'a Generic<T, M, A>>,
 }
 
@@ -40,8 +40,12 @@ where
     A: Readable,
 {
     /// Reads a value from the address that the accessor points to.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
     pub fn read_volatile(&self) -> T {
-        self.access.read_volatile()
+        self.a.read_volatile()
     }
 
     /// Alias of [`BoundGeneric::read_volatile`].
@@ -56,8 +60,12 @@ where
     A: Writable,
 {
     /// Writes a value to the address that the accessor points to.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
     pub fn write_volatile(&mut self, v: T) {
-        self.access.write_volatile(v);
+        self.a.write_volatile(v);
     }
 
     /// Alias of [`BoundGeneric::write_volatile`].
@@ -71,16 +79,20 @@ where
     M: Mapper,
     A: Readable + Writable,
 {
-    /// Updates a value that the accessor points by reading it, modifying it, and writing it.
+    /// Updates a value that the accessor points to by reading it, modifying it, and writing it.
     ///
     /// Note that some MMIO regions (e.g. the Command Ring Pointer field of the Command
     /// Ring Control Register of the xHCI) may return 0 regardless of the actual values of the
     /// fields. For these regions, this operation should be called only once.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
     pub fn update_volatile<U>(&mut self, f: U)
     where
         U: FnOnce(&mut T),
     {
-        self.access.update_volatile(f);
+        self.a.update_volatile(f);
     }
 
     /// Alias of [`BoundGeneric::update_volatile`].
@@ -93,14 +105,14 @@ where
     }
 }
 
-/// For a field struct type [`T`], add `#[derive(BoundSetGenericOf)]` before the struct definition
-/// then `BoundSetGenericOfT<'a, M, A>` type will be derived, which is more convenient
-/// than [`BoundGeneric<'a, T, M, a>`].
+/// A derive macro which converts a field struct type into a struct of accessors with same field names.
+/// For a field struct type `T`, add `#[derive(BoundSetGenericOf)]` before the struct definition to derive
+/// accessor struct type `BoundSetGenericOfT<'a, M, A>`. See [`BoundSetGeneric`] for details.
 pub use accessor_macros::BoundSetGenericOf;
 
 /// Combined with proc-macro [`BoundSetGenericOf`], this trait converts array accessors of field struct types into a struct of accessors with same field names.
 ///
-/// This trait is intended to be implemented automatically by [`BoundSetGenericOf`] expansion. Users should not implement this manually.
+/// This trait is intended to be implemented automatically by [`BoundSetGenericOf`] macro expansion. Users should not implement this manually.
 ///
 /// # Examples
 ///
@@ -122,10 +134,10 @@ pub use accessor_macros::BoundSetGenericOf;
 /// //     y: accessor::single::ReadWrite::<u32, M>,
 /// // }
 /// // ```
-/// // The derivation also implements `BoundSetGeneric<Foo, M, A>`
-/// // so that a `accessor::array::ReadWrite::<Foo, M>` instance can be indexed into a `BoundSetGenericOfFoo` item, which has a lifetime bound to the base array accessor.
+/// // The derivation also implements `BoundSetGeneric<Foo, M, A>` so that an `accessor::array::ReadWrite::<Foo, M>` instance
+/// // can be indexed into a `BoundSetGenericOfFoo` item, which has a lifetime bound to the base array accessor.
 ///
-/// let mut a = unsafe { accessor::array::ReadWrite::<u32, M>::new(0x1000, 10, Identity) };
+/// let mut a = unsafe { accessor::array::ReadWrite::<Foo, M>::new(0x1000, 10, Identity) };
 ///
 /// // read `x` field of 0th element of the array.
 /// let x = a.set_at(0).x.read_volatile();
@@ -281,9 +293,21 @@ where
         self.len
     }
 
+    /// Returns `i`th element as a lifetimed single element accessor.
+    pub fn at(&self, i: usize) -> BoundGeneric<'_, T, M, A> {
+        assert!(i < self.len);
+        unsafe {
+            BoundGeneric {
+                a: single::Generic::new(self.addr(i), Identity),
+                _lifetime: PhantomData,
+            }
+        }
+    }
+
     /// Returns the virtual address of the item of index `i`.
+    ///
     /// This is public but hidden, since this method should be called in `accessor_macros::BoundSetGenericOf` proc-macro expansion.
-    /// Users of this crate are not intended to call this.
+    /// Users of this crate are not intended to call this directly.
     #[doc(hidden)]
     pub unsafe fn addr(&self, i: usize) -> usize {
         self.virt + mem::size_of::<T>() * i
@@ -297,30 +321,15 @@ where
 impl<T, M, A> Generic<T, M, A>
 where
     M: Mapper,
-    A: AccessorTypeSpecifier,
-{
-    /// Returns `i`th element as a lifetimed single element accessor.
-    pub fn at(&self, i: usize) -> BoundGeneric<'_, T, M, A> {
-        assert!(i < self.len);
-        unsafe {
-            BoundGeneric {
-                access: single::Generic::new(self.addr(i), Identity),
-                _lifetime: PhantomData,
-            }
-        }
-    }
-}
-
-impl<T, M, A> Generic<T, M, A>
-where
-    M: Mapper,
     A: Readable,
 {
-    /// Reads the `i`th element from the address that the accessor points.
+    /// Reads the `i`th element from the address that the accessor points to.
+    ///
+    /// `accessor.read_volatile_at(i)` is equivalent to `accessor.at(i).read_volatile()`.
     ///
     /// # Panics
     ///
-    /// This method will panic if `i >= self.len()`
+    /// This method will panic if `i >= self.len()`.
     pub fn read_volatile_at(&self, i: usize) -> T {
         assert!(i < self.len());
 
@@ -341,9 +350,11 @@ where
 {
     /// Writes `v` as the `i`th element to the address that the accessor points to.
     ///
+    /// `accessor.write_volatile_at(i, v)` is equivalent to `accessor.at(i).write_volatile(v)`.
+    ///
     /// # Panics
     ///
-    /// This method will panic if `i >= self.len()`
+    /// This method will panic if `i >= self.len()`.
     pub fn write_volatile_at(&mut self, i: usize, v: T) {
         assert!(i < self.len());
 
@@ -365,6 +376,12 @@ where
     A: Readable + Writable,
 {
     /// Updates the `i`th element that the accessor points by reading it, modifying it, and writing it.
+    ///
+    /// `accessor.update_volatile_at(i, f)` is equivalent to `accessor.at(i).update_volatile(f)`.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
     pub fn update_volatile_at<U>(&mut self, i: usize, f: U)
     where
         U: FnOnce(&mut T),
