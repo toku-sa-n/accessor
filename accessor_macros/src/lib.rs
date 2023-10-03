@@ -60,7 +60,7 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
         impl<M, A> accessor::array::BoundSetGeneric<#orig_ident, M, A> for accessor::array::Generic<#orig_ident, M, A>
         where
             M: accessor::mapper::Mapper,
-            A: accessor::marker::Readable + 'static,
+            A: accessor::marker::Readable,
         {
             type BoundSetGenericType<'a> = #bound_ident<'a, M, accessor::marker::ReadOnly>
             where Self: 'a;
@@ -80,7 +80,7 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
         impl<M, A> accessor::array::BoundSetGenericMut<#orig_ident, M, A> for accessor::array::Generic<#orig_ident, M, A>
         where
             M: accessor::mapper::Mapper,
-            A: accessor::marker::Writable + 'static,
+            A: accessor::marker::Writable,
         {
             type BoundSetGenericType<'a> = #bound_ident<'a, M, A>
             where Self: 'a;

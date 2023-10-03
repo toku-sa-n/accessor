@@ -28,7 +28,7 @@ pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 pub struct BoundGeneric<'a, T, M, A>
 where
     M: Mapper,
-    A: AccessorTypeSpecifier + 'static,
+    A: AccessorTypeSpecifier,
 {
     a: single::Generic<T, Identity, A>,
     _lifetime: PhantomData<&'a Generic<T, M, A>>,
@@ -150,7 +150,7 @@ pub use accessor_macros::BoundSetGenericOf;
 pub trait BoundSetGeneric<T, M, A>
 where
     M: Mapper,
-    A: Readable + 'static,
+    A: Readable,
 {
     type BoundSetGenericType<'a>
     where
@@ -164,7 +164,7 @@ where
 pub trait BoundSetGenericMut<T, M, A>
 where
     M: Mapper,
-    A: Writable + 'static,
+    A: Writable,
 {
     type BoundSetGenericType<'a>
     where
