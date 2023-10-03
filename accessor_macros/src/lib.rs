@@ -43,14 +43,7 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
             }
         });
     
-    // let _field_convert_mut = _field_convert.clone();
-    let _field_convert_mut = fields.iter()
-        .map(|field| {
-            let ident = field.ident.as_ref().unwrap().clone();
-            quote! {
-                #ident: accessor::single::Generic::new(addr + accessor::memoffset::offset_of!(#orig_ident, #ident), accessor::mapper::Identity),
-            }
-        });
+    let _field_convert_mut = _field_convert.clone();
     
     let tokens = quote! {
         #[allow(missing_docs)]
