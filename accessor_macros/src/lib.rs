@@ -43,6 +43,15 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
             }
         });
     
+    // let _field_convert_mut = _field_convert.clone();
+    let _field_convert_mut = fields.iter()
+        .map(|field| {
+            let ident = field.ident.as_ref().unwrap().clone();
+            quote! {
+                #ident: accessor::single::Generic::new(addr + accessor::memoffset::offset_of!(#orig_ident, #ident), accessor::mapper::Identity),
+            }
+        });
+    
     let tokens = quote! {
         #[allow(missing_docs)]
         #[allow(missing_debug_implementations)]
@@ -58,17 +67,37 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
         impl<M, A> accessor::array::BoundSetGeneric<#orig_ident, M, A> for accessor::array::Generic<#orig_ident, M, A>
         where
             M: accessor::mapper::Mapper,
-            A: accessor::marker::AccessorTypeSpecifier + 'static,
+            A: accessor::marker::Readable + 'static,
         {
-            type BoundSetGenericType<'a> = #bound_ident<'a, M, A>
+            type BoundSetGenericType<'a> = #bound_ident<'a, M, accessor::marker::ReadOnly>
             where Self: 'a;
 
-            fn set_at<'a>(&'a self, i: usize) -> #bound_ident<'a, M, A> {
+            fn set_at<'a>(&'a self, i: usize) -> #bound_ident<'a, M, accessor::marker::ReadOnly> {
                 assert!(i < self.len());
                 unsafe {
                     let addr = self.addr(i);
                     #bound_ident {
                         #(#_field_convert)*
+                        _lifetime: core::marker::PhantomData
+                    }
+                }
+            }
+        }
+
+        impl<M, A> accessor::array::BoundSetGenericMut<#orig_ident, M, A> for accessor::array::Generic<#orig_ident, M, A>
+        where
+            M: accessor::mapper::Mapper,
+            A: accessor::marker::Writable + 'static,
+        {
+            type BoundSetGenericType<'a> = #bound_ident<'a, M, A>
+            where Self: 'a;
+
+            fn set_at_mut<'a>(&'a mut self, i: usize) -> #bound_ident<'a, M, A> {
+                assert!(i < self.len());
+                unsafe {
+                    let addr = self.addr(i);
+                    #bound_ident {
+                        #(#_field_convert_mut)*
                         _lifetime: core::marker::PhantomData
                     }
                 }

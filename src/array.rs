@@ -118,7 +118,7 @@ pub use accessor_macros::BoundSetGenericOf;
 ///
 /// ```no_run
 /// use accessor::mapper::Identity;
-/// use accessor::array::{BoundSetGeneric, BoundSetGenericOf};
+/// use accessor::array::{BoundSetGeneric, BoundSetGenericMut, BoundSetGenericOf};
 ///
 /// #[repr(C)]
 /// #[derive(Clone, Copy, BoundSetGenericOf)]
@@ -134,7 +134,7 @@ pub use accessor_macros::BoundSetGenericOf;
 /// //     y: accessor::single::ReadWrite::<u32, Identity>,
 /// // }
 /// // ```
-/// // The derivation also implements `BoundSetGeneric<Foo, M, A>` so that an `accessor::array::ReadWrite::<Foo, M>` instance
+/// // The derivation also implements `BoundSetGeneric<Foo, M, A>` and `BoundSetGenericMut<Foo, M, A>` so that an `accessor::array::ReadWrite::<Foo, M>` instance
 /// // can be indexed into a `BoundSetGenericOfFoo` item, which has a lifetime bound to the base array accessor.
 ///
 /// let mut a = unsafe { accessor::array::ReadWrite::<Foo, M>::new(0x1000, 10, Identity) };
@@ -143,20 +143,34 @@ pub use accessor_macros::BoundSetGenericOf;
 /// let x = a.set_at(0).x.read_volatile();
 ///
 /// // write 5 as the `y` field of 2nd element of the array.
-/// a.set_at(2).y.write_volatile(5);
+/// a.set_at_mut(2).y.write_volatile(5);
 ///
 /// ```
 ///
 pub trait BoundSetGeneric<T, M, A>
 where
     M: Mapper,
-    A: AccessorTypeSpecifier + 'static,
+    A: Readable + 'static,
 {
     type BoundSetGenericType<'a>
     where
         Self: 'a;
 
     fn set_at(&self, i: usize) -> Self::BoundSetGenericType<'_>;
+}
+
+/// The mutable counterpart for [`BoundSetGeneric`].
+/// See [`BoundSetGeneric`] for details.
+pub trait BoundSetGenericMut<T, M, A>
+where
+    M: Mapper,
+    A: Writable + 'static,
+{
+    type BoundSetGenericType<'a>
+    where
+        Self: 'a;
+
+    fn set_at_mut(&mut self, i: usize) -> Self::BoundSetGenericType<'_>;
 }
 
 /// An accessor to read, modify, and write an array of some type on memory.
@@ -200,16 +214,16 @@ where
 ///     *v *= 2;
 /// });
 ///
-/// // Below are the equivalent examples using `.at()` method.
+/// // Below are the equivalent examples using `.at()` and `.at_mut()` method.
 ///
 /// // Read the 3rd element of the array.
 /// a.at(3).read_volatile();
 ///
 /// // Write 42 as the 5th element of the array.
-/// a.at(5).write_volatile(42);
+/// a.at_mut(5).write_volatile(42);
 ///
 /// // Update the 0th element.
-/// a.at(0).update_volatile(|v| {
+/// a.at_mut(0).update_volatile(|v| {
 ///     *v *= 2;
 /// })
 ///
@@ -293,17 +307,6 @@ where
         self.len
     }
 
-    /// Returns `i`th element as a lifetimed single element accessor.
-    pub fn at(&self, i: usize) -> BoundGeneric<'_, T, M, A> {
-        assert!(i < self.len);
-        unsafe {
-            BoundGeneric {
-                a: single::Generic::new(self.addr(i), Identity),
-                _lifetime: PhantomData,
-            }
-        }
-    }
-
     /// Returns the virtual address of the item of index `i`.
     ///
     /// This is public but hidden, since this method should be called in `accessor_macros::BoundSetGenericOf` proc-macro expansion.
@@ -323,6 +326,17 @@ where
     M: Mapper,
     A: Readable,
 {
+    /// Returns `i`th element as a read-only bound single element accessor.
+    pub fn at(&self, i: usize) -> BoundGeneric<'_, T, M, marker::ReadOnly> {
+        assert!(i < self.len);
+        unsafe {
+            BoundGeneric {
+                a: single::Generic::new(self.addr(i), Identity),
+                _lifetime: PhantomData,
+            }
+        }
+    }
+
     /// Reads the `i`th element from the address that the accessor points to.
     ///
     /// `accessor.read_volatile_at(i)` is equivalent to `accessor.at(i).read_volatile()`.
@@ -348,9 +362,20 @@ where
     M: Mapper,
     A: Writable,
 {
+    /// Returns `i`th element as a writable bound single element accessor.
+    pub fn at_mut(&mut self, i: usize) -> BoundGeneric<'_, T, M, A> {
+        assert!(i < self.len);
+        unsafe {
+            BoundGeneric {
+                a: single::Generic::new(self.addr(i), Identity),
+                _lifetime: PhantomData,
+            }
+        }
+    }
+
     /// Writes `v` as the `i`th element to the address that the accessor points to.
     ///
-    /// `accessor.write_volatile_at(i, v)` is equivalent to `accessor.at(i).write_volatile(v)`.
+    /// `accessor.write_volatile_at(i, v)` is equivalent to `accessor.at_mut(i).write_volatile(v)`.
     ///
     /// # Panics
     ///
@@ -377,7 +402,7 @@ where
 {
     /// Updates the `i`th element that the accessor points by reading it, modifying it, and writing it.
     ///
-    /// `accessor.update_volatile_at(i, f)` is equivalent to `accessor.at(i).update_volatile(f)`.
+    /// `accessor.update_volatile_at(i, f)` is equivalent to `accessor.at_mut(i).update_volatile(f)`.
     ///
     /// # Panics
     ///
