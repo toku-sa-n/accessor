@@ -60,10 +60,10 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
             M: accessor::mapper::Mapper,
             A: accessor::marker::AccessorTypeSpecifier + 'static,
         {
-            type BoundSetGenericType<'a> = #bound_ident<'a, accessor::mapper::Identity, A>
+            type BoundSetGenericType<'a> = #bound_ident<'a, M, A>
             where Self: 'a;
 
-            fn set_at<'a>(&'a self, i: usize) -> #bound_ident<'a, accessor::mapper::Identity, A> {
+            fn set_at<'a>(&'a self, i: usize) -> #bound_ident<'a, M, A> {
                 assert!(i < self.len());
                 unsafe {
                     let addr = self.addr(i);

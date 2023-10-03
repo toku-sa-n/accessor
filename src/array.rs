@@ -130,8 +130,8 @@ pub use accessor_macros::BoundSetGenericOf;
 /// // The above derivation creates a struct-of-accessor type called `BoundSetGenericOfFoo` which is roughly equivalent to:
 /// // ```
 /// // struct BoundSetGenericOfFoo {
-/// //     x: accessor::single::ReadWrite::<u32, M>,
-/// //     y: accessor::single::ReadWrite::<u32, M>,
+/// //     x: accessor::single::ReadWrite::<u32, Identity>,
+/// //     y: accessor::single::ReadWrite::<u32, Identity>,
 /// // }
 /// // ```
 /// // The derivation also implements `BoundSetGeneric<Foo, M, A>` so that an `accessor::array::ReadWrite::<Foo, M>` instance

@@ -8,7 +8,7 @@
 Accessors to read and write physical memory volatilely, such as performing memory-mapped I/O.
 
 This crate provides accessors to the value at a specific physical memory address.
-The accessed type doesn't have to implement [`Copy`], but be aware that reading and writing the value creates a bitwise copy it.
+The accessed type doesn't have to implement [`Copy`], but be aware that reading and writing the value creates a bitwise copy of it.
 
 Accessors are similar to pointers with volatile read/writes
 (or for those who are familiar with crate [volatile(~v0.3.0)](https://docs.rs/volatile/0.3.0/volatile/index.html), pointers of volatile wrappers)
@@ -20,7 +20,7 @@ mapper implemented by the crate user. The methods of accessors allow access to t
 specified physical address. Once an accessor is dropped, the mapped memory is unmapped.
 
 If one has full control of physical memory addresses(e.g. developing their own kernel),
-a 'virtual' address is equal to the physical one, and the mapper should map any address into itself.
+a 'virtual' address may be equal to the physical one, in which case the mapper should map any address into itself.
 The built-in mapper `mapper::Identity` can be used for such cases.
 
 This crate is `#[no_std]` compatible.

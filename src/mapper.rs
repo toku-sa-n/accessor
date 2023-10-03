@@ -57,10 +57,8 @@ pub trait Mapper {
 #[derive(Clone)]
 pub struct Identity;
 impl Mapper for Identity {
-    #[allow(unused_variables)]
-    unsafe fn map(&mut self, phys_base: usize, bytes: usize) -> NonZeroUsize {
+    unsafe fn map(&mut self, phys_base: usize, _bytes: usize) -> NonZeroUsize {
         NonZeroUsize::new_unchecked(phys_base)
     }
-    #[allow(unused_variables)]
-    fn unmap(&mut self, virt_base: usize, bytes: usize) {}
+    fn unmap(&mut self, _virt_start: usize, _bytes: usize) {}
 }
