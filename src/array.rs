@@ -23,9 +23,9 @@ pub type ReadOnly<T, M> = Generic<T, M, marker::ReadOnly>;
 /// A write-only accessor.
 pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 
-/// Bound wrapper of a single-element accessor.
+/// Bounded wrapper of a single-element accessor.
 /// The lifetime is set to the lifetime of its array accessor.
-pub struct BoundGeneric<'a, T, M, A>
+pub struct Bounded<'a, T, M, A>
 where
     M: Mapper,
     A: AccessorTypeSpecifier,
@@ -34,7 +34,7 @@ where
     _lifetime: PhantomData<&'a Generic<T, M, A>>,
 }
 
-impl<'a, T, M, A> BoundGeneric<'a, T, M, A>
+impl<'a, T, M, A> Bounded<'a, T, M, A>
 where
     M: Mapper,
     A: Readable,
@@ -48,13 +48,13 @@ where
         self.a.read_volatile()
     }
 
-    /// Alias of [`BoundGeneric::read_volatile`].
+    /// Alias of [`Bounded::read_volatile`].
     #[deprecated(since = "0.3.1", note = "use `read_volatile`")]
     pub fn read(&self) -> T {
         self.read_volatile()
     }
 }
-impl<'a, T, M, A> BoundGeneric<'a, T, M, A>
+impl<'a, T, M, A> Bounded<'a, T, M, A>
 where
     M: Mapper,
     A: Writable,
@@ -68,13 +68,13 @@ where
         self.a.write_volatile(v);
     }
 
-    /// Alias of [`BoundGeneric::write_volatile`].
+    /// Alias of [`Bounded::write_volatile`].
     #[deprecated(since = "0.3.1", note = "use `write_volatile`")]
     pub fn write(&mut self, v: T) {
         self.write_volatile(v);
     }
 }
-impl<'a, T, M, A> BoundGeneric<'a, T, M, A>
+impl<'a, T, M, A> Bounded<'a, T, M, A>
 where
     M: Mapper,
     A: Readable + Writable,
@@ -95,7 +95,7 @@ where
         self.a.update_volatile(f);
     }
 
-    /// Alias of [`BoundGeneric::update_volatile`].
+    /// Alias of [`Bounded::update_volatile`].
     #[deprecated(since = "0.3.1", note = "use `update_volatile`")]
     pub fn update<U>(&mut self, f: U)
     where
@@ -106,71 +106,71 @@ where
 }
 
 /// A derive macro which converts a field struct type into a struct of accessors with same field names.
-/// For a field struct type `T`, add `#[derive(BoundSetGenericOf)]` before the struct definition to derive
-/// accessor struct type `BoundSetGenericOfT<'a, M, A>`. See [`BoundSetGeneric`] for details.
-pub use accessor_macros::BoundSetGenericOf;
+/// For a field struct type `T`, add `#[derive(BoundedStructuralOf)]` before the struct definition to derive
+/// accessor struct type `BoundedStructuralOfT<'a, M, A>`. See [`BoundedStructural`] for details.
+pub use accessor_macros::BoundedStructuralOf;
 
-/// Combined with proc-macro [`BoundSetGenericOf`], this trait converts array accessors of field struct types into a struct of accessors with same field names.
+/// Combined with proc-macro [`BoundedStructuralOf`], this trait converts array accessors of field struct types into a struct of accessors with same field names.
 ///
-/// This trait is intended to be implemented automatically by [`BoundSetGenericOf`] macro expansion. Users should not implement this manually.
+/// This trait is intended to be implemented automatically by [`BoundedStructuralOf`] macro expansion. Users should not implement this manually.
 ///
 /// # Examples
 ///
 /// ```no_run
 /// use accessor::mapper::Identity;
-/// use accessor::array::{BoundSetGeneric, BoundSetGenericMut, BoundSetGenericOf};
+/// use accessor::array::{BoundedStructural, BoundedStructuralMut, BoundedStructuralOf};
 ///
 /// #[repr(C)]
-/// #[derive(Clone, Copy, BoundSetGenericOf)]
+/// #[derive(Clone, Copy, BoundedStructuralOf)]
 /// struct Foo {
 ///     x: u32,
 ///     y: u32,
 /// }
 ///
-/// // The above derivation creates a struct-of-accessor type called `BoundSetGenericOfFoo` which is roughly equivalent to:
+/// // The above derivation creates a struct-of-accessor type called `BoundedStructuralOfFoo` which is roughly equivalent to:
 /// // ```
-/// // struct BoundSetGenericOfFoo {
+/// // struct BoundedStructuralOfFoo {
 /// //     x: accessor::single::ReadWrite::<u32, Identity>,
 /// //     y: accessor::single::ReadWrite::<u32, Identity>,
 /// // }
 /// // ```
-/// // The derivation also implements `BoundSetGeneric<Foo, M, A>` and `BoundSetGenericMut<Foo, M, A>` so that an `accessor::array::ReadWrite::<Foo, M>` instance
-/// // can be indexed into a `BoundSetGenericOfFoo` item, which has a lifetime bound to the base array accessor.
+/// // The derivation also implements `BoundedStructural<Foo, M, A>` and `BoundedStructuralMut<Foo, M, A>` so that an `accessor::array::ReadWrite::<Foo, M>` instance
+/// // can be indexed into a `BoundedStructuralOfFoo` item, which has a lifetime bound to the base array accessor.
 ///
 /// let mut a = unsafe { accessor::array::ReadWrite::<Foo, M>::new(0x1000, 10, Identity) };
 ///
 /// // read `x` field of 0th element of the array.
-/// let x = a.set_at(0).x.read_volatile();
+/// let x = a.structural_at(0).x.read_volatile();
 ///
 /// // write 5 as the `y` field of 2nd element of the array.
-/// a.set_at_mut(2).y.write_volatile(5);
+/// a.structural_at_mut(2).y.write_volatile(5);
 ///
 /// ```
 ///
-pub trait BoundSetGeneric<T, M, A>
+pub trait BoundedStructural<T, M, A>
 where
     M: Mapper,
     A: Readable,
 {
-    type BoundSetGenericType<'a>
+    type BoundedStructuralType<'a>
     where
         Self: 'a;
 
-    fn set_at(&self, i: usize) -> Self::BoundSetGenericType<'_>;
+    fn structural_at(&self, i: usize) -> Self::BoundedStructuralType<'_>;
 }
 
-/// The mutable counterpart for [`BoundSetGeneric`].
-/// See [`BoundSetGeneric`] for details.
-pub trait BoundSetGenericMut<T, M, A>
+/// The mutable counterpart for [`BoundedStructural`].
+/// See [`BoundedStructural`] for details.
+pub trait BoundedStructuralMut<T, M, A>
 where
     M: Mapper,
     A: Writable,
 {
-    type BoundSetGenericType<'a>
+    type BoundedStructuralType<'a>
     where
         Self: 'a;
 
-    fn set_at_mut(&mut self, i: usize) -> Self::BoundSetGenericType<'_>;
+    fn structural_at_mut(&mut self, i: usize) -> Self::BoundedStructuralType<'_>;
 }
 
 /// An accessor to read, modify, and write an array of some type on memory.
@@ -309,7 +309,7 @@ where
 
     /// Returns the virtual address of the item of index `i`.
     ///
-    /// This is public but hidden, since this method should be called in `accessor_macros::BoundSetGenericOf` proc-macro expansion.
+    /// This is public but hidden, since this method should be called in `accessor_macros::BoundedStructuralOf` proc-macro expansion.
     /// Users of this crate are not intended to call this directly.
     #[doc(hidden)]
     pub unsafe fn addr(&self, i: usize) -> usize {
@@ -327,10 +327,10 @@ where
     A: Readable,
 {
     /// Returns `i`th element as a read-only bound single element accessor.
-    pub fn at(&self, i: usize) -> BoundGeneric<'_, T, M, marker::ReadOnly> {
+    pub fn at(&self, i: usize) -> Bounded<'_, T, M, marker::ReadOnly> {
         assert!(i < self.len);
         unsafe {
-            BoundGeneric {
+            Bounded {
                 a: single::Generic::new(self.addr(i), Identity),
                 _lifetime: PhantomData,
             }
@@ -363,10 +363,10 @@ where
     A: Writable,
 {
     /// Returns `i`th element as a writable bound single element accessor.
-    pub fn at_mut(&mut self, i: usize) -> BoundGeneric<'_, T, M, A> {
+    pub fn at_mut(&mut self, i: usize) -> Bounded<'_, T, M, A> {
         assert!(i < self.len);
         unsafe {
-            BoundGeneric {
+            Bounded {
                 a: single::Generic::new(self.addr(i), Identity),
                 _lifetime: PhantomData,
             }

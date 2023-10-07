@@ -4,8 +4,8 @@ use proc_macro2::{Ident, Span};
 use quote::quote;
 use syn::DeriveInput;
 
-#[proc_macro_derive(BoundSetGenericOf)]
-pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
+#[proc_macro_derive(BoundedStructuralOf)]
+pub fn derive_bounded_structural_of(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let DeriveInput {
         vis,
         ident: orig_ident,
@@ -13,7 +13,7 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
         ..
     } = syn::parse(input).unwrap();
 
-    let bound_ident = Ident::new(&format!("BoundSetGenericOf{}", orig_ident), Span::call_site());
+    let bound_ident = Ident::new(&format!("BoundedStructuralOf{}", orig_ident), Span::call_site());
 
     let fields = match data {
         syn::Data::Struct(ref s) => &s.fields,
@@ -57,15 +57,15 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
             _lifetime: core::marker::PhantomData<&'a accessor::array::Generic<#orig_ident, M, A>>
         }
 
-        impl<M, A> accessor::array::BoundSetGeneric<#orig_ident, M, A> for accessor::array::Generic<#orig_ident, M, A>
+        impl<M, A> accessor::array::BoundedStructural<#orig_ident, M, A> for accessor::array::Generic<#orig_ident, M, A>
         where
             M: accessor::mapper::Mapper,
             A: accessor::marker::Readable,
         {
-            type BoundSetGenericType<'a> = #bound_ident<'a, M, accessor::marker::ReadOnly>
+            type BoundedStructuralType<'a> = #bound_ident<'a, M, accessor::marker::ReadOnly>
             where Self: 'a;
 
-            fn set_at<'a>(&'a self, i: usize) -> #bound_ident<'a, M, accessor::marker::ReadOnly> {
+            fn structural_at<'a>(&'a self, i: usize) -> #bound_ident<'a, M, accessor::marker::ReadOnly> {
                 assert!(i < self.len());
                 unsafe {
                     let addr = self.addr(i);
@@ -77,15 +77,15 @@ pub fn derive_bound_set_generic_of(input: proc_macro::TokenStream) -> proc_macro
             }
         }
 
-        impl<M, A> accessor::array::BoundSetGenericMut<#orig_ident, M, A> for accessor::array::Generic<#orig_ident, M, A>
+        impl<M, A> accessor::array::BoundedStructuralMut<#orig_ident, M, A> for accessor::array::Generic<#orig_ident, M, A>
         where
             M: accessor::mapper::Mapper,
             A: accessor::marker::Writable,
         {
-            type BoundSetGenericType<'a> = #bound_ident<'a, M, A>
+            type BoundedStructuralType<'a> = #bound_ident<'a, M, A>
             where Self: 'a;
 
-            fn set_at_mut<'a>(&'a mut self, i: usize) -> #bound_ident<'a, M, A> {
+            fn structural_at_mut<'a>(&'a mut self, i: usize) -> #bound_ident<'a, M, A> {
                 assert!(i < self.len());
                 unsafe {
                     let addr = self.addr(i);
