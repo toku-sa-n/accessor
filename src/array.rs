@@ -159,7 +159,6 @@ where
     where
         Self: 'a;
 
-
     /// Returns `i`th element as a struct of read-only bound accessors.
     fn structural_at(&self, i: usize) -> Self::BoundedStructuralType<'_>;
 }
@@ -330,9 +329,9 @@ where
     A: Readable,
 {
     /// Returns `i`th element as a read-only bound single element accessor.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This method will panic if `i >= self.len()`.
     pub fn at(&self, i: usize) -> Bounded<'_, T, M, marker::ReadOnly> {
         assert!(i < self.len);
@@ -370,9 +369,9 @@ where
     A: Writable,
 {
     /// Returns `i`th element as a writable bound single element accessor.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// This method will panic if `i >= self.len()`.
     pub fn at_mut(&mut self, i: usize) -> Bounded<'_, T, M, A> {
         assert!(i < self.len);
