@@ -1,9 +1,12 @@
-extern crate proc_macro;
+//! A crate which defines [`BoundedStructuralOf`] proc-macro.
 
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use syn::DeriveInput;
 
+/// Use this derivation to field structs so that array accessor of the struct type can be indexed into a struct of fields.
+/// 
+/// See `accessor::array::BoundStructual` trait for more details.
 #[proc_macro_derive(BoundedStructuralOf)]
 pub fn derive_bounded_structural_of(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let DeriveInput {
@@ -17,12 +20,12 @@ pub fn derive_bounded_structural_of(input: proc_macro::TokenStream) -> proc_macr
 
     let fields = match data {
         syn::Data::Struct(ref s) => &s.fields,
-        _ => panic!("Field can only be derived for field structs"),
+        _ => panic!("`BoundedStructuralOf` can be derived only for field structs."),
     };
     if let syn::Fields::Named(_) = fields {}
     else {
-        panic!("Field can only be derived for field structs");
         // todo: support for tuple structs
+        panic!("`BoundedStructuralOf` can be derived only for field structs.");
     }
 
     let _field_var = fields.iter()
