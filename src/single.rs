@@ -67,7 +67,6 @@ where
     A: AccessorTypeSpecifier,
 {
     virt: usize,
-    bytes: usize,
     _marker: PhantomData<T>,
     _readable_writable: PhantomData<A>,
     mapper: M,
@@ -97,7 +96,6 @@ where
 
         Self {
             virt,
-            bytes,
             _marker: PhantomData,
             _readable_writable: PhantomData,
             mapper,
@@ -255,6 +253,7 @@ where
     A: AccessorTypeSpecifier,
 {
     fn drop(&mut self) {
-        self.mapper.unmap(self.virt, self.bytes);
+        let bytes = mem::size_of::<T>();
+        self.mapper.unmap(self.virt, bytes);
     }
 }
