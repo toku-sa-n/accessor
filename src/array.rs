@@ -315,10 +315,6 @@ where
     pub unsafe fn addr(&self, i: usize) -> usize {
         self.virt + mem::size_of::<T>() * i
     }
-
-    fn bytes(&self) -> usize {
-        mem::size_of::<T>() * self.len
-    }
 }
 
 impl<T, M, A> Generic<T, M, A>
@@ -443,7 +439,7 @@ where
 {
     fn eq(&self, other: &Self) -> bool {
         self.into_iter()
-            .zip(other.into_iter())
+            .zip(other)
             .map(|(a, b)| a.eq(&b))
             .all(|x| x)
     }
@@ -485,7 +481,8 @@ where
     A: AccessorTypeSpecifier,
 {
     fn drop(&mut self) {
-        self.mapper.unmap(self.virt, self.bytes());
+        let bytes = mem::size_of::<T>() * self.len;
+        self.mapper.unmap(self.virt, bytes);
     }
 }
 
