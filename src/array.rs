@@ -10,7 +10,7 @@ use {
     core::{fmt, hash::Hash, marker::PhantomData, mem, ptr},
 };
 
-/// An alis of [`Array`]
+/// An alias of [`Array`]
 #[deprecated(since = "0.3.2", note = "Use `ReadWrite`.")]
 pub type Array<T, M> = ReadWrite<T, M>;
 
@@ -44,12 +44,14 @@ where
     /// # Panics
     ///
     /// This method will panic if `i >= self.len()`.
+    #[must_use]
     pub fn read_volatile(&self) -> T {
         self.a.read_volatile()
     }
 
     /// Alias of [`Bounded::read_volatile`].
     #[deprecated(since = "0.3.1", note = "use `read_volatile`")]
+    #[must_use]
     pub fn read(&self) -> T {
         self.read_volatile()
     }
@@ -152,10 +154,13 @@ where
     M: Mapper,
     A: Readable,
 {
+    /// The concrete type of the struct of accessors which `.structural_at(i)` returns.
     type BoundedStructuralType<'a>
     where
         Self: 'a;
 
+
+    /// Returns `i`th element as a struct of read-only bound accessors.
     fn structural_at(&self, i: usize) -> Self::BoundedStructuralType<'_>;
 }
 
@@ -166,10 +171,12 @@ where
     M: Mapper,
     A: Writable,
 {
+    /// The concrete type of the struct of accessors which `.structural_at_mut(i)` returns.
     type BoundedStructuralType<'a>
     where
         Self: 'a;
 
+    /// Returns `i`th element as a struct of writable bound accessors.
     fn structural_at_mut(&mut self, i: usize) -> Self::BoundedStructuralType<'_>;
 }
 
@@ -323,6 +330,10 @@ where
     A: Readable,
 {
     /// Returns `i`th element as a read-only bound single element accessor.
+    /// 
+    /// # Panics
+    /// 
+    /// This method will panic if `i >= self.len()`.
     pub fn at(&self, i: usize) -> Bounded<'_, T, M, marker::ReadOnly> {
         assert!(i < self.len);
         unsafe {
@@ -359,6 +370,10 @@ where
     A: Writable,
 {
     /// Returns `i`th element as a writable bound single element accessor.
+    /// 
+    /// # Panics
+    /// 
+    /// This method will panic if `i >= self.len()`.
     pub fn at_mut(&mut self, i: usize) -> Bounded<'_, T, M, A> {
         assert!(i < self.len);
         unsafe {

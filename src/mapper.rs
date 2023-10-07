@@ -54,7 +54,7 @@ pub trait Mapper {
 }
 
 /// an identity mapper which maps a physical address into itself.
-#[derive(Clone)]
+#[derive(Clone, Copy, Debug)]
 pub struct Identity;
 impl Mapper for Identity {
     unsafe fn map(&mut self, phys_base: usize, _bytes: usize) -> NonZeroUsize {
