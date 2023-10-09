@@ -325,11 +325,12 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use core::num::NonZeroUsize;
 
     struct M;
-    impl crate::mapper::Mapper for M {
+    impl Mapper for M {
         unsafe fn map(&mut self, phys_start: usize, _: usize) -> core::num::NonZeroUsize {
-            core::num::NonZeroUsize::new(phys_start).unwrap()
+            NonZeroUsize::new(phys_start).unwrap()
         }
 
         fn unmap(&mut self, _: usize, _: usize) {}
