@@ -321,6 +321,8 @@ mod tests {
     }
 
     fn addr<T>(v: &T) -> usize {
-        v as *const _ as usize
+        let v: *const T = v;
+
+        v as usize
     }
 }
