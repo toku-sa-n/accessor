@@ -257,3 +257,70 @@ where
         self.mapper.unmap(self.virt, bytes);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use core::num::NonZeroUsize;
+
+    struct M;
+    impl Mapper for M {
+        unsafe fn map(&mut self, phys_start: usize, _: usize) -> NonZeroUsize {
+            NonZeroUsize::new(phys_start).unwrap()
+        }
+
+        fn unmap(&mut self, _: usize, _: usize) {}
+    }
+
+    #[test]
+    fn test_read_volatile() {
+        let v: u32 = 42;
+        let a = unsafe { ReadWrite::<u32, M>::new(addr(&v), M) };
+
+        assert_eq!(a.read_volatile(), 42);
+    }
+
+    #[test]
+    fn test_write_volatile() {
+        let mut v: u32 = 0;
+        let mut a = unsafe { ReadWrite::<u32, M>::new(addr(&mut v), M) };
+
+        a.write_volatile(42);
+        assert_eq!(v, 42);
+    }
+
+    #[test]
+    fn test_update_volatile() {
+        let mut v: u32 = 42;
+        let mut a = unsafe { ReadWrite::<u32, M>::new(addr(&mut v), M) };
+
+        a.update_volatile(|v| *v *= 2);
+        assert_eq!(v, 84);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_not_aligned() {
+        let v: u32 = 42;
+
+        let _ = unsafe { ReadWrite::<u32, M>::new(addr(&v) + 1, M) };
+    }
+
+    #[test]
+    fn test_err_not_aligned() {
+        let v: u32 = 42;
+
+        let r = unsafe { ReadWrite::<u32, M>::try_new(addr(&v) + 1, M) };
+        assert_eq!(
+            r,
+            Err(Error::NotAligned {
+                alignment: mem::align_of::<u32>(),
+                address: addr(&v) + 1,
+            })
+        );
+    }
+
+    fn addr<T>(v: &T) -> usize {
+        v as *const _ as usize
+    }
+}
