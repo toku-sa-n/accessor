@@ -319,3 +319,119 @@ where
         }
     }
 }
+
+// TODO: Rewrite the following tests as doc tests once
+// https://github.com/rust-lang/rust/issues/78695 is fixed.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct M;
+    impl crate::mapper::Mapper for M {
+        unsafe fn map(&mut self, phys_start: usize, _: usize) -> core::num::NonZeroUsize {
+            core::num::NonZeroUsize::new(phys_start).unwrap()
+        }
+
+        fn unmap(&mut self, _: usize, _: usize) {}
+    }
+
+    #[test]
+    fn test_read_volatile_at() {
+        let arr = [1, 2, 3, 4, 5];
+        let a = unsafe { ReadOnly::<u32, _>::new(base_addr(&arr), arr.len(), M) };
+
+        assert_eq!(a.read_volatile_at(0), 1);
+    }
+
+    #[test]
+    fn test_write_volatile_at() {
+        let mut arr = [1, 2, 3, 4, 5];
+        let mut a = unsafe { WriteOnly::<u32, _>::new(base_addr(&mut arr), arr.len(), M) };
+
+        a.write_volatile_at(0, 42);
+        assert_eq!(arr[0], 42);
+    }
+
+    #[test]
+    fn test_update_volatile_at() {
+        let mut arr = [1, 2, 3, 4, 5];
+        let mut a = unsafe { ReadWrite::<u32, _>::new(base_addr(&mut arr), arr.len(), M) };
+
+        a.update_volatile_at(0, |v| {
+            *v *= 2;
+        });
+        assert_eq!(arr[0], 2);
+    }
+
+    #[test]
+    fn test_into_iter() {
+        let arr = [1, 2, 3, 4, 5];
+        let a = unsafe { ReadOnly::<u32, _>::new(base_addr(&arr), arr.len(), M) };
+
+        let mut iter = a.into_iter();
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(2));
+        assert_eq!(iter.next(), Some(3));
+        assert_eq!(iter.next(), Some(4));
+        assert_eq!(iter.next(), Some(5));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn test_eq() {
+        let arr = [1, 2, 3, 4, 5];
+        let a = unsafe { ReadOnly::<u32, _>::new(base_addr(&arr), arr.len(), M) };
+        let b = unsafe { ReadOnly::<u32, _>::new(base_addr(&arr), arr.len(), M) };
+
+        assert_eq!(a, b);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_out_of_bounds() {
+        let arr = [1, 2, 3, 4, 5];
+        let a = unsafe { ReadOnly::<u32, _>::new(base_addr(&arr), arr.len(), M) };
+
+        let _ = a.read_volatile_at(5);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_empty_array() {
+        let arr = [1, 2, 3, 4, 5];
+        let _ = unsafe { ReadOnly::<u32, _>::new(base_addr(&arr), 0, M) };
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_not_aligned() {
+        let arr = [1, 2, 3, 4, 5];
+        let _ = unsafe { ReadOnly::<u32, _>::new(base_addr(&arr) + 1, arr.len(), M) };
+    }
+
+    #[test]
+    fn test_err_empty_array() {
+        let arr = [1, 2, 3, 4, 5];
+        let r = unsafe { ReadOnly::<u32, _>::try_new(base_addr(&arr), 0, M) };
+
+        assert_eq!(r, Err(Error::EmptyArray));
+    }
+
+    #[test]
+    fn test_err_not_aligned() {
+        let arr = [1, 2, 3, 4, 5];
+        let r = unsafe { ReadOnly::<u32, _>::try_new(base_addr(&arr) + 1, arr.len(), M) };
+
+        assert_eq!(
+            r,
+            Err(Error::NotAligned {
+                alignment: mem::align_of::<u32>(),
+                address: base_addr(&arr) + 1,
+            })
+        );
+    }
+
+    fn base_addr<T>(a: &[T]) -> usize {
+        return a.as_ptr() as usize;
+    }
+}
