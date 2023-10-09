@@ -329,7 +329,7 @@ mod tests {
 
     struct M;
     impl Mapper for M {
-        unsafe fn map(&mut self, phys_start: usize, _: usize) -> core::num::NonZeroUsize {
+        unsafe fn map(&mut self, phys_start: usize, _: usize) -> NonZeroUsize {
             NonZeroUsize::new(phys_start).unwrap()
         }
 
