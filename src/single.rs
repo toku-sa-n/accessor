@@ -22,6 +22,75 @@ pub type ReadOnly<T, M> = Generic<T, M, marker::ReadOnly>;
 /// A write-only accessor.
 pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 
+/// Combined with proc-macro [`BoundedStructuralOf`], this trait converts array accessors of field struct types into a struct of accessors with same field names.
+///
+/// This trait is intended to be implemented automatically by [`BoundedStructuralOf`] macro expansion. Users should not implement this manually.
+///
+/// # Examples
+///
+/// ```no_run
+/// use accessor::mapper::Identity;
+/// use accessor::BoundedStructuralOf;
+/// use accessor::single::{BoundedStructural, BoundedStructuralMut};
+///
+/// #[repr(C)]
+/// #[derive(Clone, Copy, BoundedStructuralOf)]
+/// struct Foo {
+///     x: u32,
+///     y: u32,
+/// }
+///
+/// // The above derivation creates a struct-of-accessor type called `BoundedStructuralOfFoo` which is roughly equivalent to:
+/// // ```
+/// // struct BoundedStructuralOfFoo {
+/// //     x: accessor::single::ReadWrite::<u32, Identity>,
+/// //     y: accessor::single::ReadWrite::<u32, Identity>,
+/// // }
+/// // ```
+/// // The derivation also implements `BoundedStructural<Foo, M, A>` and `BoundedStructuralMut<Foo, M, A>` so that an `accessor::single::ReadWrite::<Foo, M>` instance
+/// // can be accessed with a `BoundedStructuralOfFoo` item, which has a lifetime bound to the base accessor.
+///
+/// let mut a = unsafe { accessor::single::ReadWrite::<Foo, M>::new(0x1000, Identity) };
+///
+/// // read `x` field of the accessor.
+/// let x = a.structural().x.read_volatile();
+///
+/// // write 5 as the `y` field of the accessor.
+/// a.structural_at_mut(2).y.write_volatile(5);
+///
+/// ```
+///
+pub trait BoundedStructural<T, M, A>
+where
+    M: Mapper,
+    A: Readable,
+{
+    /// The concrete type of the struct of accessors which `.structural_at(i)` returns.
+    type BoundedStructuralType<'a>
+    where
+        Self: 'a;
+
+    /// Returns bounded struct of read-only accessors.
+    fn structural(&self, i: usize) -> Self::BoundedStructuralType<'_>;
+}
+
+/// The mutable counterpart for [`BoundedStructural`].
+/// See [`BoundedStructural`] for details.
+pub trait BoundedStructuralMut<T, M, A>
+where
+    M: Mapper,
+    A: Writable,
+{
+    /// The concrete type of the struct of accessors which `.structural_at_mut(i)` returns.
+    type BoundedStructuralType<'a>
+    where
+        Self: 'a;
+
+    /// Returns bounded struct of writable accessors.
+    fn structural_mut(&mut self) -> Self::BoundedStructuralType<'_>;
+}
+
+
 /// An accessor to read, modify, and write a single value of memory.
 ///
 /// `T` does not need to implement [`Copy`]. However, be careful that [`Generic::read_volatile`]
@@ -124,6 +193,15 @@ where
                 address: phys_base,
             })
         }
+    }
+
+    /// Returns the virtual address of the item.
+    ///
+    /// This is public but hidden, since this method should be called in `accessor_macros::BoundedStructuralOf` proc-macro expansion.
+    /// Users of this crate are not intended to call this directly.
+    #[doc(hidden)]
+    pub unsafe fn addr(&self) -> usize {
+        self.virt
     }
 }
 impl<T, M, A> Generic<T, M, A>

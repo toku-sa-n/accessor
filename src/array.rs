@@ -107,11 +107,6 @@ where
     }
 }
 
-/// A derive macro which converts a field struct type into a struct of accessors with same field names.
-/// For a field struct type `T`, add `#[derive(BoundedStructuralOf)]` before the struct definition to derive
-/// accessor struct type `BoundedStructuralOfT<'a, M, A>`. See [`BoundedStructural`] for details.
-pub use accessor_macros::BoundedStructuralOf;
-
 /// Combined with proc-macro [`BoundedStructuralOf`], this trait converts array accessors of field struct types into a struct of accessors with same field names.
 ///
 /// This trait is intended to be implemented automatically by [`BoundedStructuralOf`] macro expansion. Users should not implement this manually.
@@ -120,7 +115,8 @@ pub use accessor_macros::BoundedStructuralOf;
 ///
 /// ```no_run
 /// use accessor::mapper::Identity;
-/// use accessor::array::{BoundedStructural, BoundedStructuralMut, BoundedStructuralOf};
+/// use accessor::BoundedStructuralOf;
+/// use accessor::array::{BoundedStructural, BoundedStructuralMut};
 ///
 /// #[repr(C)]
 /// #[derive(Clone, Copy, BoundedStructuralOf)]
@@ -159,7 +155,7 @@ where
     where
         Self: 'a;
 
-    /// Returns `i`th element as a struct of read-only bound accessors.
+    /// Returns `i`th element as a bounded struct of read-only accessors.
     fn structural_at(&self, i: usize) -> Self::BoundedStructuralType<'_>;
 }
 
@@ -175,7 +171,7 @@ where
     where
         Self: 'a;
 
-    /// Returns `i`th element as a struct of writable bound accessors.
+    /// Returns `i`th element as a bounded struct of writable accessors.
     fn structural_at_mut(&mut self, i: usize) -> Self::BoundedStructuralType<'_>;
 }
 
