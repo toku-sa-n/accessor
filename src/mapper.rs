@@ -52,3 +52,13 @@ pub trait Mapper {
     /// ```
     fn unmap(&mut self, virt_start: usize, bytes: usize);
 }
+
+/// an identity mapper which maps a physical address into itself.
+#[derive(Clone, Copy, Debug)]
+pub struct Identity;
+impl Mapper for Identity {
+    unsafe fn map(&mut self, phys_base: usize, _bytes: usize) -> NonZeroUsize {
+        NonZeroUsize::new_unchecked(phys_base)
+    }
+    fn unmap(&mut self, _virt_start: usize, _bytes: usize) {}
+}
