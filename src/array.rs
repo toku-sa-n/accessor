@@ -281,6 +281,27 @@ where
         }
     }
 
+    /// Create an element accessor for specific index of this array.
+    ///
+    /// Use this method if you need the ownership of the indexed accessor,
+    /// and are sure that you will not use the original array accessor again.
+    /// Otherwise, consider `.at(i)`, `.structural_at(i)` or their mutable counterparts.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure the following conditions:
+    /// - The array accessor should live longer than the element accessor.
+    /// - After an element accessor has been created, the array accessor should not access into index `i`
+    ///   including creating a new accessor for the same index `i`.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
+    pub unsafe fn unbounded_at(&self, i: usize) -> single::Generic<T, Identity, A> {
+        assert!(i < self.len);
+        single::Generic::new(self.addr(i), Identity)
+    }
+
     /// Creates an accessor to `[T; len]` at the physical address `phys_base`.
     ///
     /// # Safety
