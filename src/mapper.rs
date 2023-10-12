@@ -16,6 +16,11 @@ pub trait Mapper {
     /// The caller must be careful, especially if it tries to remap by calling [`Mapper::unmap`], then
     /// [`Mapper::map`] to the same memory region.
     ///
+    /// # Panics
+    ///
+    /// Depending on implementation, this method may panic if `phys_start` has null or any other
+    /// invalid physical addresses.
+    ///
     /// # Examples
     ///
     /// ```no_run
@@ -53,12 +58,21 @@ pub trait Mapper {
     fn unmap(&mut self, virt_start: usize, bytes: usize);
 }
 
-/// an identity mapper which maps a physical address into itself.
-#[derive(Clone, Copy, Debug)]
+/// The trivial mapper, which maps an address into itself.
+///
+/// This mapper serves two purposes:
+/// - It maps a physical address into the virtual address of the same value.
+///   This is especially useful when you have an access to the physical address space
+///   itself and should reference it directly, as when working on an OS kernel.
+/// - It maps an already-mapped virtual address into itself, preventing duplicate
+///   mapping calls to other non-trivial mappers.
+///
+/// An accessor of some type using this mapper may be regarded as a pointer to that type.
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 pub struct Identity;
 impl Mapper for Identity {
     unsafe fn map(&mut self, phys_base: usize, _bytes: usize) -> NonZeroUsize {
-        NonZeroUsize::new_unchecked(phys_base)
+        NonZeroUsize::new(phys_base).expect("`phys_base` should not be null.")
     }
     fn unmap(&mut self, _virt_start: usize, _bytes: usize) {}
 }
