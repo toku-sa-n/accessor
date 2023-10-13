@@ -71,7 +71,7 @@ where
         Self: 'a;
 
     /// Returns bounded struct of read-only accessors.
-    fn structural(&self, i: usize) -> Self::BoundedStructuralType<'_>;
+    fn structural(&self) -> Self::BoundedStructuralType<'_>;
 }
 
 /// The mutable counterpart for [`BoundedStructural`].
