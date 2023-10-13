@@ -15,7 +15,7 @@ pub use {error::Error, mapper::Mapper};
 /// A derive macro which converts a field struct type into a struct of accessors with same field names.
 /// For a field struct type `T`, add `#[derive(BoundedStructuralOf)]` before the struct definition to derive
 /// accessor struct type `SingleBoundedStructuralOfT<'a, M, A>` and `ArrayBoundedStructuralOfT<'a, M, A>`.
-/// 
+///
 /// See [`single::BoundedStructural`] and [`array::BoundedStructural`]  for details.
 pub use accessor_macros::BoundedStructuralOf;
 

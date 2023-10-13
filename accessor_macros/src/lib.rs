@@ -1,4 +1,4 @@
-//! A crate which defines [`StructuralOf`] proc-macro.
+//! A crate which defines [`BoundedStructuralOf`] proc-macro.
 
 use proc_macro2::{Ident, Span};
 use quote::quote;

@@ -90,7 +90,6 @@ where
     fn structural_mut(&mut self) -> Self::BoundedStructuralType<'_>;
 }
 
-
 /// An accessor to read, modify, and write a single value of memory.
 ///
 /// `T` does not need to implement [`Copy`]. However, be careful that [`Generic::read_volatile`]
