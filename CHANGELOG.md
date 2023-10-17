@@ -1,10 +1,12 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- `mapper::Identity` is added as a built-in mapper ([#48]).
 
 ## [0.3.3] - 2021-08-18
 ### Changed
-- `Copy` trait bound is removed from `array::Generic` and `single::Generic ([#37]).
+- `Copy` trait bound is removed from `array::Generic` and `single::Generic` ([#37]).
 - Tests on CI now runs `cargo test` and `cargo doc` ([#42]).
 
 ### Fixed
@@ -69,6 +71,7 @@
 ### Added
 - Initial version.
 
+[#48]: https://github.com/toku-sa-n/accessor/pull/48
 [#42]: https://github.com/toku-sa-n/accessor/pull/42
 [#41]: https://github.com/toku-sa-n/accessor/pull/41
 [#39]: https://github.com/toku-sa-n/accessor/pull/39
