@@ -74,5 +74,6 @@ impl Mapper for Identity {
     unsafe fn map(&mut self, phys_base: usize, _bytes: usize) -> NonZeroUsize {
         NonZeroUsize::new(phys_base).expect("`phys_base` should not be null.")
     }
+
     fn unmap(&mut self, _virt_start: usize, _bytes: usize) {}
 }

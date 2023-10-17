@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 ### Added
-- `mapper::Identity` is added as a built-in mapper.
+- `mapper::Identity` is added as a built-in mapper ([#48]).
 
 ## [0.3.3] - 2021-08-18
 ### Changed
