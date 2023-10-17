@@ -71,6 +71,7 @@
 ### Added
 - Initial version.
 
+[#48]: https://github.com/toku-sa-n/accessor/pull/48
 [#42]: https://github.com/toku-sa-n/accessor/pull/42
 [#41]: https://github.com/toku-sa-n/accessor/pull/41
 [#39]: https://github.com/toku-sa-n/accessor/pull/39
