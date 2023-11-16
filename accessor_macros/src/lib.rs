@@ -6,7 +6,7 @@ use syn::DeriveInput;
 
 /// Use this derivation to field structs so that an accessor of the struct type can be accessed/indexed into a struct of fields.
 /// 
-/// See `accessor::single::{BoundStructural, BoundStructuralMut}` and `accessor::array::{BoundStructural, BoundedStructuralMut}` traits for more details.
+/// See `accessor::single::{BoundedStructural, BoundedStructuralMut}` and `accessor::array::{BoundedStructural, BoundededStructuralMut}` traits for more details.
 #[proc_macro_derive(BoundedStructuralOf)]
 pub fn derive_bounded_structural_of(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let DeriveInput {
