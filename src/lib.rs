@@ -1,6 +1,8 @@
 #![doc = include_str!("../README.md")]
 #![no_std]
 
+#![feature(offset_of)]
+
 pub mod array;
 pub mod error;
 pub mod mapper;
@@ -18,9 +20,6 @@ pub use {error::Error, mapper::Mapper};
 ///
 /// See [`single::BoundedStructural`] and [`array::BoundedStructural`]  for details.
 pub use accessor_macros::BoundedStructuralOf;
-
-#[doc(hidden)]
-pub use memoffset;
 
 fn is_aligned<T>(phys_base: usize) -> bool {
     phys_base % core::mem::align_of::<T>() == 0

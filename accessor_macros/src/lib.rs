@@ -1,5 +1,7 @@
 //! A crate which defines [`BoundedStructuralOf`] proc-macro.
 
+#![feature(offset_of)]
+
 use proc_macro2::{Ident, Span};
 use quote::quote;
 use syn::DeriveInput;
@@ -42,7 +44,7 @@ pub fn derive_bounded_structural_of(input: proc_macro::TokenStream) -> proc_macr
         .map(|field| {
             let ident = field.ident.as_ref().unwrap().clone();
             quote! {
-                #ident: accessor::single::Generic::new(addr + accessor::memoffset::offset_of!(#orig_ident, #ident), accessor::mapper::Identity),
+                #ident: accessor::single::Generic::new(addr + core::mem::offset_of!(#orig_ident, #ident), accessor::mapper::Identity),
             }
         });
     let field_convert_mut = field_convert.clone();

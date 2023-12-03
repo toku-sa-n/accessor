@@ -12,4 +12,3 @@ keywords = ["no_std", "OS"]
 
 [dependencies]
 accessor_macros = { path = "./accessor_macros" }
-memoffset = "0.9.0"
