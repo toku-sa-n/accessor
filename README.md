@@ -5,15 +5,23 @@
 ![Crates.io](https://img.shields.io/crates/l/accessor)
 [![docs.rs](https://docs.rs/accessor/badge.svg)](https://docs.rs/accessor)
 
-Accessors to access physical memory.
+Accessors to read and write physical memory volatilely, such as performing memory-mapped I/O.
 
-This crate provides accessors to values at a specific memory address. When an accessor is
-created, physical memory is mapped to virtual memory. The methods of the accessors can access
-a value at the specified physical address.  Once an accessor is dropped, the mapped memory is unmapped.
+This crate provides accessors to the value at a specific physical memory address.
+The accessed type doesn't have to implement [`Copy`], but be aware that reading and writing the value creates a bitwise copy of it.
 
-This crate is intended to access memory-mapped I/O. Reading and writing are done volatilely.
+Accessors are similar to pointers with volatile read/writes
+(or for those who are familiar with crate [volatile(~v0.3.0)](https://docs.rs/volatile/0.3.0/volatile/index.html), pointers of volatile wrappers)
+but also designed to refer correct physical addresses even in virtual memory mode,
+once an appropriate physical-to-virtual memory mapper is specified.
 
-The accessed type must implement [`Copy`] because reading and writing values need to copy it.
+When an accessor is created, the physical memory is mapped into virtual memory, with the help of the
+mapper implemented by the crate user. The methods of accessors allow access to the value at the
+specified physical address. Once an accessor is dropped, the mapped memory is unmapped.
+
+If one has full control of physical memory addresses(e.g. developing their own kernel),
+a 'virtual' address may be equal to the physical one, in which case the mapper should map any address into itself.
+The built-in mapper `mapper::Identity` can be used for such cases.
 
 This crate is `#[no_std]` compatible.
 

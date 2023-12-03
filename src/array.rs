@@ -3,13 +3,14 @@
 use {
     crate::{
         error::Error,
-        mapper::Mapper,
+        mapper::{Identity, Mapper},
         marker::{self, AccessorTypeSpecifier, Readable, Writable},
+        single,
     },
     core::{fmt, hash::Hash, marker::PhantomData, mem, ptr},
 };
 
-/// An alis of [`Array`]
+/// An alias of [`Array`]
 #[deprecated(since = "0.3.2", note = "Use `ReadWrite`.")]
 pub type Array<T, M> = ReadWrite<T, M>;
 
@@ -21,6 +22,158 @@ pub type ReadOnly<T, M> = Generic<T, M, marker::ReadOnly>;
 
 /// A write-only accessor.
 pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
+
+/// Bounded wrapper of a single-element accessor.
+/// The lifetime is set to the lifetime of its array accessor.
+pub struct Bounded<'a, T, M, A>
+where
+    M: Mapper,
+    A: AccessorTypeSpecifier,
+{
+    a: single::Generic<T, Identity, A>,
+    _lifetime: PhantomData<&'a Generic<T, M, A>>,
+}
+
+impl<'a, T, M, A> Bounded<'a, T, M, A>
+where
+    M: Mapper,
+    A: Readable,
+{
+    /// Reads a value from the address that the accessor points to.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
+    #[must_use]
+    pub fn read_volatile(&self) -> T {
+        self.a.read_volatile()
+    }
+
+    /// Alias of [`Bounded::read_volatile`].
+    #[deprecated(since = "0.3.1", note = "use `read_volatile`")]
+    #[must_use]
+    pub fn read(&self) -> T {
+        self.read_volatile()
+    }
+}
+impl<'a, T, M, A> Bounded<'a, T, M, A>
+where
+    M: Mapper,
+    A: Writable,
+{
+    /// Writes a value to the address that the accessor points to.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
+    pub fn write_volatile(&mut self, v: T) {
+        self.a.write_volatile(v);
+    }
+
+    /// Alias of [`Bounded::write_volatile`].
+    #[deprecated(since = "0.3.1", note = "use `write_volatile`")]
+    pub fn write(&mut self, v: T) {
+        self.write_volatile(v);
+    }
+}
+impl<'a, T, M, A> Bounded<'a, T, M, A>
+where
+    M: Mapper,
+    A: Readable + Writable,
+{
+    /// Updates a value that the accessor points to by reading it, modifying it, and writing it.
+    ///
+    /// Note that some MMIO regions (e.g. the Command Ring Pointer field of the Command
+    /// Ring Control Register of the xHCI) may return 0 regardless of the actual values of the
+    /// fields. For these regions, this operation should be called only once.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
+    pub fn update_volatile<U>(&mut self, f: U)
+    where
+        U: FnOnce(&mut T),
+    {
+        self.a.update_volatile(f);
+    }
+
+    /// Alias of [`Bounded::update_volatile`].
+    #[deprecated(since = "0.3.1", note = "use `update_volatile`")]
+    pub fn update<U>(&mut self, f: U)
+    where
+        U: FnOnce(&mut T),
+    {
+        self.update_volatile(f);
+    }
+}
+
+/// Combined with proc-macro [`BoundedStructuralOf`], this trait converts array accessors of field struct types into a struct of accessors with same field names.
+///
+/// This trait is intended to be implemented automatically by [`BoundedStructuralOf`] macro expansion. Users should not implement this manually.
+///
+/// # Examples
+///
+/// ```no_run
+/// use accessor::mapper::Identity;
+/// use accessor::BoundedStructuralOf;
+/// use accessor::array::{BoundedStructural, BoundedStructuralMut};
+///
+/// #[repr(C)]
+/// #[derive(Clone, Copy, BoundedStructuralOf)]
+/// struct Foo {
+///     x: u32,
+///     y: u32,
+/// }
+///
+/// // The above derivation creates a struct-of-accessor type called `BoundedStructuralOfFoo` which is roughly equivalent to:
+/// // ```
+/// // struct BoundedStructuralOfFoo {
+/// //     x: accessor::single::ReadWrite::<u32, Identity>,
+/// //     y: accessor::single::ReadWrite::<u32, Identity>,
+/// // }
+/// // ```
+/// // The derivation also implements `BoundedStructural<Foo, M, A>` and `BoundedStructuralMut<Foo, M, A>` so that an `accessor::array::ReadWrite::<Foo, M>` instance
+/// // can be indexed into a `BoundedStructuralOfFoo` item, which has a lifetime bound to the base array accessor.
+///
+/// let mut a = unsafe { accessor::array::ReadWrite::<Foo, M>::new(0x1000, 10, Identity) };
+///
+/// // read `x` field of 0th element of the array.
+/// let x = a.structural_at(0).x.read_volatile();
+///
+/// // write 5 as the `y` field of 2nd element of the array.
+/// a.structural_at_mut(2).y.write_volatile(5);
+///
+/// ```
+///
+pub trait BoundedStructural<T, M, A>
+where
+    M: Mapper,
+    A: Readable,
+{
+    /// The concrete type of the struct of accessors which `.structural_at(i)` returns.
+    type BoundedStructuralType<'a>
+    where
+        Self: 'a;
+
+    /// Returns `i`th element as a bounded struct of read-only accessors.
+    fn structural_at(&self, i: usize) -> Self::BoundedStructuralType<'_>;
+}
+
+/// The mutable counterpart for [`BoundedStructural`].
+/// See [`BoundedStructural`] for details.
+pub trait BoundedStructuralMut<T, M, A>
+where
+    M: Mapper,
+    A: Writable,
+{
+    /// The concrete type of the struct of accessors which `.structural_at_mut(i)` returns.
+    type BoundedStructuralType<'a>
+    where
+        Self: 'a;
+
+    /// Returns `i`th element as a bounded struct of writable accessors.
+    fn structural_at_mut(&mut self, i: usize) -> Self::BoundedStructuralType<'_>;
+}
 
 /// An accessor to read, modify, and write an array of some type on memory.
 ///
@@ -50,7 +203,7 @@ pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 ///
 /// // Create an accessor to the array at the physical address 0x1000 that has 10 elements
 /// // of i32 type.
-/// let mut a = unsafe { accessor::Array::<u32, M>::new(0x1000, 10, mapper) };
+/// let mut a = unsafe { accessor::array::ReadWrite::<u32, M>::new(0x1000, 10, mapper) };
 ///
 /// // Read the 3rd element of the array.
 /// a.read_volatile_at(3);
@@ -62,6 +215,20 @@ pub type WriteOnly<T, M> = Generic<T, M, marker::WriteOnly>;
 /// a.update_volatile_at(0, |v| {
 ///     *v *= 2;
 /// });
+///
+/// // Below are the equivalent examples using `.at()` and `.at_mut()` method.
+///
+/// // Read the 3rd element of the array.
+/// a.at(3).read_volatile();
+///
+/// // Write 42 as the 5th element of the array.
+/// a.at_mut(5).write_volatile(42);
+///
+/// // Update the 0th element.
+/// a.at_mut(0).update_volatile(|v| {
+///     *v *= 2;
+/// })
+///
 /// ```
 pub struct Generic<T, M, A>
 where
@@ -110,6 +277,27 @@ where
         }
     }
 
+    /// Create an element accessor for specific index of this array.
+    ///
+    /// Use this method if you need the ownership of the indexed accessor,
+    /// and are sure that you will not use the original array accessor again.
+    /// Otherwise, consider `.at(i)`, `.structural_at(i)` or their mutable counterparts.
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure the following conditions:
+    /// - The array accessor should live longer than the element accessor.
+    /// - After an element accessor has been created, the array accessor should not access into index `i`
+    ///   including creating a new accessor for the same index `i`.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
+    pub unsafe fn unbounded_at(&self, i: usize) -> single::Generic<T, Identity, A> {
+        assert!(i < self.len);
+        single::Generic::new(self.addr(i), Identity)
+    }
+
     /// Creates an accessor to `[T; len]` at the physical address `phys_base`.
     ///
     /// # Safety
@@ -142,20 +330,43 @@ where
         self.len
     }
 
-    fn addr(&self, i: usize) -> usize {
+    /// Returns the virtual address of the item of index `i`.
+    ///
+    /// This is public but hidden, since this method should be called in `accessor_macros::BoundedStructuralOf` proc-macro expansion.
+    /// Users of this crate are not intended to call this directly.
+    #[doc(hidden)]
+    pub unsafe fn addr(&self, i: usize) -> usize {
         self.virt + mem::size_of::<T>() * i
     }
 }
+
 impl<T, M, A> Generic<T, M, A>
 where
     M: Mapper,
     A: Readable,
 {
-    /// Reads the `i`th element from the address that the accessor points.
+    /// Returns `i`th element as a read-only bound single element accessor.
     ///
     /// # Panics
     ///
-    /// This method will panic if `i >= self.len()`
+    /// This method will panic if `i >= self.len()`.
+    pub fn at(&self, i: usize) -> Bounded<'_, T, M, marker::ReadOnly> {
+        assert!(i < self.len);
+        unsafe {
+            Bounded {
+                a: single::Generic::new(self.addr(i), Identity),
+                _lifetime: PhantomData,
+            }
+        }
+    }
+
+    /// Reads the `i`th element from the address that the accessor points to.
+    ///
+    /// `accessor.read_volatile_at(i)` is equivalent to `accessor.at(i).read_volatile()`.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
     pub fn read_volatile_at(&self, i: usize) -> T {
         assert!(i < self.len());
 
@@ -174,11 +385,28 @@ where
     M: Mapper,
     A: Writable,
 {
-    /// Writes `v` as the `i`th element to the address that the accessor points to.
+    /// Returns `i`th element as a writable bound single element accessor.
     ///
     /// # Panics
     ///
-    /// This method will panic if `i >= self.len()`
+    /// This method will panic if `i >= self.len()`.
+    pub fn at_mut(&mut self, i: usize) -> Bounded<'_, T, M, A> {
+        assert!(i < self.len);
+        unsafe {
+            Bounded {
+                a: single::Generic::new(self.addr(i), Identity),
+                _lifetime: PhantomData,
+            }
+        }
+    }
+
+    /// Writes `v` as the `i`th element to the address that the accessor points to.
+    ///
+    /// `accessor.write_volatile_at(i, v)` is equivalent to `accessor.at_mut(i).write_volatile(v)`.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
     pub fn write_volatile_at(&mut self, i: usize, v: T) {
         assert!(i < self.len());
 
@@ -200,6 +428,12 @@ where
     A: Readable + Writable,
 {
     /// Updates the `i`th element that the accessor points by reading it, modifying it, and writing it.
+    ///
+    /// `accessor.update_volatile_at(i, f)` is equivalent to `accessor.at_mut(i).update_volatile(f)`.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `i >= self.len()`.
     pub fn update_volatile_at<U>(&mut self, i: usize, f: U)
     where
         U: FnOnce(&mut T),
